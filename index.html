@@ -145,6 +145,7 @@
   <h3 id="dlgTitle">Producto nuevo</h3>
   <p id="dlgText" style="margin:0 0 10px;color:var(--mut);font-size:14px"></p>
   <input id="dlgInput" type="text" placeholder="Nombre del producto">
+  <button class="btn sec" id="dlgWeb" type="button" style="width:100%;margin-bottom:12px" hidden>🔎 Buscar este código en Google</button>
   <div class="row">
     <button class="btn sec" id="dlgCancel" type="button">Cancelar</button>
     <button class="btn" id="dlgOk" type="button">Añadir</button>
@@ -158,12 +159,14 @@
     <button class="btn sec" id="mUncheck">Desmarcar todos</button>
     <button class="btn sec" id="mCopy">Copiar lista como texto</button>
     <button class="btn sec" id="mWhats">Enviar por WhatsApp</button>
+    <button class="btn sec" id="mDb">📦 Base de productos…</button>
     <button class="btn sec" id="mImport">Importar lista pegada…</button>
     <button class="btn sec" id="mClearAll" style="color:var(--danger)">Vaciar toda la lista</button>
     <button class="btn" id="mClose">Cerrar</button>
   </div>
 </dialog>
 
+<input type="file" id="dbFile" accept=".json,application/json" hidden>
 <div id="toast"></div>
 
 <script src="zxing.min.js"></script>
@@ -240,10 +243,11 @@
   let toastT;
   function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400); }
 
-  function askName({title, text, value = '', ok = 'Añadir'}){
+  function askName({title, text, value = '', ok = 'Añadir', web = ''}){
     return new Promise(res => {
       const d = $('#dlgName'); $('#dlgTitle').textContent = title; $('#dlgText').textContent = text || '';
       const inp = $('#dlgInput'); inp.value = value; $('#dlgOk').textContent = ok;
+      const wb = $('#dlgWeb'); wb.hidden = !web; wb.onclick = () => window.open(web, '_blank');
       const done = v => { d.close(); res(v); };
       $('#dlgOk').onclick = () => done(inp.value.trim());
       $('#dlgCancel').onclick = () => done(null);
@@ -286,7 +290,7 @@
 
   /* ---------- Menú ---------- */
   const menu = $('#dlgMenu');
-  $('#btnMenu').onclick = () => menu.showModal();
+  $('#btnMenu').onclick = () => { menu.showModal(); refreshDbLabel(); };
   $('#mClose').onclick = () => menu.close();
   $('#mClearDone').onclick = () => { items = items.filter(i => !i.done); save(); render(); menu.close(); };
   $('#mUncheck').onclick = () => { items.forEach(i => i.done = false); save(); render(); menu.close(); };
@@ -391,7 +395,7 @@
     let name = known[code];
     if (!name){ name = await lookup(code); }
     if (!name){
-      name = await askName({ title: 'Producto no encontrado', text: 'Código ' + code + '. Ponle un nombre y lo recordaré la próxima vez.' });
+      name = await askName({ title: 'Producto no encontrado', text: 'Código ' + code + '. Ponle un nombre y lo recordaré la próxima vez.', web: 'https://www.google.com/search?q=' + encodeURIComponent(code) });
     }
     if (name){
       known[code] = name;
@@ -405,11 +409,12 @@
     }
   }
 
-  async function lookup(code){
-    if (!navigator.onLine) return null;
+  // Familia Open Facts (misma API, sin clave): alimentos, cosmética, productos del hogar y mascotas
+  const OPEN_HOSTS = ['openfoodfacts', 'openbeautyfacts', 'openproductsfacts', 'openpetfoodfacts'];
+  async function lookupOpen(host, code){
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 6000);
-      const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_es,brands,quantity`, { signal: ctl.signal });
+      const r = await fetch(`https://world.${host}.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_es,brands,quantity`, { signal: ctl.signal });
       clearTimeout(t);
       const j = await r.json();
       if (j && j.status === 1 && j.product){
@@ -418,6 +423,33 @@
       }
     } catch {}
     return null;
+  }
+  async function lookupOFF(code){
+    if (!navigator.onLine) return null;
+    const res = await Promise.all(OPEN_HOSTS.map(h => lookupOpen(h, code)));   // en paralelo
+    return res.find(Boolean) || null;                                          // gana el primero por orden
+  }
+
+  // UPCitemdb (API gratuita sin clave: 100 consultas/día y 6 por minuto)
+  async function lookupUPC(code){
+    if (!navigator.onLine) return null;
+    try {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 7000);
+      const r = await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc=' + encodeURIComponent(code), { signal: ctl.signal, headers: { Accept: 'application/json' } });
+      clearTimeout(t);
+      if (!r.ok) return null;                         // 404 = no existe, 429 = límite alcanzado
+      const j = await r.json();
+      const it = j && j.items && j.items[0];
+      if (!it || !it.title) return null;
+      let n = String(it.title).replace(/\s+/g, ' ').trim();
+      if (n.length > 70) n = n.slice(0, 70).replace(/\s+\S*$/, '') + '…';
+      const b = (it.brand || '').trim();
+      return b && !n.toLowerCase().includes(b.toLowerCase()) ? `${n} (${b})` : n;
+    } catch { return null; }
+  }
+  // Busca en orden: base local (sin internet) → Open Food Facts → UPCitemdb
+  async function lookup(code){
+    return (await lookupLocal(code)) || (await lookupOFF(code)) || (await lookupUPC(code));
   }
 
   $('#btnScan').onclick = openScanner;
@@ -545,6 +577,80 @@
   $('#catStore').addEventListener('change', () => { onlineRes = null; onlineMsg = ''; renderCatalog(); try { localStorage.setItem('lista-compra-store', $('#catStore').value); } catch {} });
   try { const s = localStorage.getItem('lista-compra-store'); if (s) $('#catStore').value = s; } catch {}
   window.addEventListener('popstate', closeCatalog);
+
+
+  /* ---------- Base de productos local (IndexedDB) ---------- */
+  const DB_NAME = 'lista-compra-db', S_P = 'p', S_M = 'm';
+  let dbp = null;
+  function idb(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      try {
+        const rq = indexedDB.open(DB_NAME, 1);
+        rq.onupgradeneeded = () => { rq.result.createObjectStore(S_P); rq.result.createObjectStore(S_M); };
+        rq.onsuccess = () => res(rq.result);
+        rq.onerror = () => rej(rq.error);
+      } catch (e){ rej(e); }
+    });
+    return dbp;
+  }
+  const rq2p = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const txDone = t => new Promise((res, rej) => { t.oncomplete = res; t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); });
+  async function dbGet(store, key){
+    try { const d = await idb(); return await rq2p(d.transaction(store).objectStore(store).get(key)); } catch { return undefined; }
+  }
+  async function dbImport(data, version){
+    const d = await idb(), codes = Object.keys(data);
+    let t = d.transaction(S_P, 'readwrite'); t.objectStore(S_P).clear(); await txDone(t);
+    const CH = 20000;
+    for (let i = 0; i < codes.length; i += CH){
+      t = d.transaction(S_P, 'readwrite'); const s = t.objectStore(S_P);
+      for (const c of codes.slice(i, i + CH)) if (typeof data[c] === 'string') s.put(data[c], c);
+      await txDone(t);
+    }
+    t = d.transaction(S_M, 'readwrite'); t.objectStore(S_M).put({ version, count: codes.length }, 'info'); await txDone(t);
+    return codes.length;
+  }
+  async function lookupLocal(code){
+    const cands = [code];
+    if (code.length === 12) cands.push('0' + code);                 // UPC-A leído como EAN-13
+    if (code.length === 13 && code[0] === '0') cands.push(code.slice(1));
+    for (const c of cands){ const v = await dbGet(S_P, c); if (typeof v === 'string' && v) return v; }
+    return null;
+  }
+  // Descarga la base publicada junto a la app (productos.json) solo si ha cambiado
+  async function syncDb(){
+    try {
+      if (!navigator.onLine) return;
+      const r = await fetch('productos.meta.json', { cache: 'no-cache' });
+      if (!r.ok) return;
+      const meta = await r.json();
+      if (!meta || !meta.count) return;
+      const cur = await dbGet(S_M, 'info');
+      if (cur && (cur.version === meta.version || String(cur.version).startsWith('manual:'))) return;
+      toast('Actualizando base de productos…');
+      const r2 = await fetch('productos.json', { cache: 'no-cache' });
+      if (!r2.ok) return;
+      const j = await r2.json();
+      const n = await dbImport(j.data && typeof j.data === 'object' ? j.data : j, meta.version);
+      toast('Base de productos lista: ' + n.toLocaleString('es') + ' productos');
+    } catch {}
+  }
+  async function refreshDbLabel(){
+    const i = await dbGet(S_M, 'info');
+    $('#mDb').textContent = '📦 Base de productos' + (i && i.count ? ' (' + i.count.toLocaleString('es') + ')' : '') + ' · importar archivo…';
+  }
+  $('#mDb').onclick = () => $('#dbFile').click();
+  $('#dbFile').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    menu.close(); toast('Importando…');
+    try {
+      const j = JSON.parse(await f.text());
+      const n = await dbImport(j && j.data && typeof j.data === 'object' ? j.data : j, 'manual:' + Date.now());
+      toast('Importados ' + n.toLocaleString('es') + ' productos');
+    } catch { toast('Archivo no válido'); }
+  };
+  setTimeout(syncDb, 1500);
 
   /* ---------- PWA ---------- */
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
