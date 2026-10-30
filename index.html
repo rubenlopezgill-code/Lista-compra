@@ -17,20 +17,26 @@
     :root{ --bg:#101311; --card:#1a1e1b; --txt:#eceeec; --mut:#9aa39d; --acc:#2fa87d; --acc2:#3bbd8e; --line:#2a302c; --danger:#e5736a; }
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
   html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  body{min-height:100dvh;padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}
+  body{min-height:100dvh}
   header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;display:flex;align-items:center;gap:8px}
   header h1{font-size:19px;margin:0;flex:1;font-weight:650}
-  header button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:9px 12px;font-size:15px;font-weight:600}
-  main{max-width:640px;margin:0 auto;padding:14px 14px 0}
+  header button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 14px;font-size:18px;font-weight:700}
+  main{max-width:640px;margin:0 auto;padding:14px 14px calc(env(safe-area-inset-bottom) + 96px)}
+  .hint{color:var(--mut);font-size:14.5px;line-height:1.45;margin:0 2px 12px}
   .add{display:flex;gap:8px;margin-bottom:12px}
-  .add input{flex:1;min-width:0;font-size:17px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt)}
+  input[type=text],input[type=search],select{font-size:17px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);min-width:0}
+  .add input{flex:1}
   .btn{border:0;border-radius:12px;padding:0 16px;font-size:17px;font-weight:650;background:var(--acc);color:#fff;min-height:48px}
   .btn.sec{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+  .btn.danger{background:var(--card);color:var(--danger);border:1px solid var(--line)}
+  .btn.big{width:100%;min-height:56px;font-size:18px;margin-bottom:12px}
   .btn:active{background:var(--acc2)}
-  .bar{display:flex;gap:8px;margin-bottom:14px}
+  .bar{display:flex;gap:8px;margin-bottom:12px}
   .bar .btn{flex:1}
-  .count{color:var(--mut);font-size:14px;margin:4px 2px 8px}
+  .count{color:var(--mut);font-size:14px;margin:6px 2px 8px;display:flex;justify-content:space-between;align-items:center}
+  .link{background:none;border:0;color:var(--acc);font-size:14px;font-weight:650;padding:4px 0}
   ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
   li{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:10px;padding:6px 8px 6px 12px;min-height:54px}
   li .chk{width:26px;height:26px;accent-color:var(--acc);flex:none}
@@ -38,156 +44,161 @@
   li .name{font-size:17px;overflow-wrap:anywhere}
   li .meta{font-size:12.5px;color:var(--mut);margin-top:2px}
   li.done .name{text-decoration:line-through;color:var(--mut)}
+  li.zero .name{color:var(--mut)}
+  li.zero .meta{color:var(--danger)}
   .qty{display:flex;align-items:center;gap:2px;flex:none}
-  .qty button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:18px;line-height:1}
-  .qty span{min-width:22px;text-align:center;font-weight:650}
+  .qty button{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:19px;line-height:1}
+  .qty span{min-width:26px;text-align:center;font-weight:650}
   .del{width:38px;height:38px;border:0;background:transparent;color:var(--danger);font-size:20px;border-radius:9px;flex:none}
-  .empty{text-align:center;color:var(--mut);padding:40px 10px;line-height:1.5}
-  /* scanner */
+  .empty{text-align:center;color:var(--mut);padding:36px 10px;line-height:1.5}
+  #sugg{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+  #sugg:empty{display:none}
+  #sugg button{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:15px}
+  #pFilter{width:100%;margin-bottom:10px}
+  .homes{display:flex;gap:8px;margin-bottom:12px}
+  .homes select{flex:1;font-weight:650}
+  .homes button{width:48px;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:12px;font-size:20px}
+  /* pestañas */
+  #tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+  #tabs button{flex:1;border:0;background:none;color:var(--mut);padding:9px 4px 8px;font-size:22px;display:flex;flex-direction:column;align-items:center;gap:2px}
+  #tabs button span{font-size:12.5px;font-weight:650}
+  #tabs button.on{color:var(--acc)}
+  /* escáner */
   #scanner{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
   #scanner.on{display:flex}
   #scanner video{flex:1;width:100%;object-fit:cover;min-height:0}
-  .frame{position:absolute;left:50%;top:38%;width:78%;max-width:340px;height:150px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45);pointer-events:none}
+  .sc-top{position:absolute;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top) + 12px) 14px 10px;background:linear-gradient(#000a,#0000);color:#fff;display:flex;flex-direction:column;gap:8px;align-items:center}
+  .sc-top b{font-size:17px}
+  #scToggle{display:flex;gap:6px}
+  #scToggle button{border:2px solid #fff6;background:#0007;color:#fff;border-radius:999px;padding:8px 18px;font-size:16px;font-weight:650}
+  #scToggle button.on{background:#fff;color:#111;border-color:#fff}
+  .frame{position:absolute;left:50%;top:42%;width:78%;max-width:340px;height:150px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45);pointer-events:none}
   .frame::after{content:"";position:absolute;left:8px;right:8px;top:50%;height:2px;background:#ff4d4d;animation:s 1.6s ease-in-out infinite alternate}
   @keyframes s{from{transform:translateY(-55px)}to{transform:translateY(55px)}}
   .sc-bottom{background:#000;color:#fff;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column;gap:10px}
   .sc-msg{font-size:15px;text-align:center;min-height:20px;color:#d7ddd9}
   .sc-row{display:flex;gap:8px}
   .sc-row input{flex:1;min-width:0;font-size:17px;padding:12px;border-radius:10px;border:0}
-  /* dialog / toast */
+  /* diálogos y aviso */
   dialog{border:0;border-radius:16px;padding:18px;width:min(92vw,420px);background:var(--card);color:var(--txt)}
   dialog::backdrop{background:rgba(0,0,0,.5)}
-  dialog h3{margin:0 0 10px}
-  dialog input{width:100%;font-size:17px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--txt);margin-bottom:12px}
+  dialog h3{margin:0 0 8px;overflow-wrap:anywhere}
+  dialog input[type=text]{width:100%;margin-bottom:12px;background:var(--bg)}
+  dialog .col{display:flex;flex-direction:column;gap:8px}
   dialog .row{display:flex;gap:8px;justify-content:flex-end}
   dialog .row .btn{padding:0 18px}
-  /* sugerencias y catálogo */
-  #sugg{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
-  #sugg:empty{display:none}
-  #sugg button{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:15px}
-  #catalog,#mine{position:fixed;inset:0;background:var(--bg);z-index:15;display:none;flex-direction:column}
-  #catalog.on,#mine.on{display:flex}
-  .cat-list .pr .sub{font-size:12.5px;color:var(--mut)}
-  .cat-list .pr button.red{background:var(--danger);width:38px}
-  .cat-head{background:var(--acc);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 14px 12px;display:flex;flex-direction:column;gap:8px}
-  .cat-top{display:flex;align-items:center;gap:8px}
-  .cat-top h2{margin:0;font-size:18px;flex:1}
-  .cat-top button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-size:15px;font-weight:600}
-  .cat-head input,.cat-head select{width:100%;font-size:16px;padding:11px 12px;border-radius:10px;border:0;background:#fff;color:#1c1f1d}
-  .cat-row{display:flex;gap:8px}
-  .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:none;flex:none}
-  .chips::-webkit-scrollbar{display:none}
-  .chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:14.5px}
-  .chips button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-  .cat-list{flex:1;overflow-y:auto;padding:0 14px calc(env(safe-area-inset-bottom) + 20px)}
-  .cat-list h4{margin:14px 2px 6px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
-  .cat-list .pr{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:4px 6px 4px 12px;margin-bottom:6px;min-height:46px}
-  .cat-list .pr .n{flex:1;font-size:16px;overflow-wrap:anywhere;padding:6px 0}
-  .cat-list .pr .in{font-size:12.5px;color:var(--acc);font-weight:650}
-  .cat-list .pr button{width:42px;height:38px;border:0;border-radius:9px;background:var(--acc);color:#fff;font-size:20px;font-weight:650}
-  .cat-list .online{width:100%;margin:12px 0 4px}
-  .cat-list .note{color:var(--mut);font-size:13.5px;text-align:center;padding:8px 6px;line-height:1.45}
-  #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:11px 16px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:40;max-width:90vw;text-align:center}
+  #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:11px 16px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:40;max-width:90vw;text-align:center}
+  #toast.top{bottom:auto;top:calc(env(safe-area-inset-top) + 64px)}
   #toast.on{opacity:1;transform:translateX(-50%)}
 </style>
 </head>
 <body>
 <header>
-  <h1>🛒 Lista de la compra</h1>
-  <button id="btnShare" aria-label="Compartir lista">Compartir</button>
+  <h1 id="hTitle">🛒 Lista de la compra</h1>
+  <button id="btnMore" aria-label="Más opciones">⋯</button>
 </header>
 
-<main>
+<!-- ============ LISTA ============ -->
+<main id="tab-list">
   <form class="add" id="addForm" autocomplete="off">
     <input id="addInput" type="text" placeholder="Añadir producto…" enterkeyhint="done" aria-label="Producto">
     <button class="btn" type="submit" aria-label="Añadir">＋</button>
   </form>
-
   <div id="sugg"></div>
-
   <div class="bar">
-    <button class="btn" id="btnScan">📷 Escanear</button>
-    <button class="btn sec" id="btnCatalog">📚 Catálogo</button>
-    <button class="btn sec" id="btnMenu" aria-label="Más opciones" style="flex:0 0 56px">⋯</button>
+    <button class="btn" id="btnScanList">📷 Escanear</button>
+    <button class="btn sec" id="btnShare">Compartir</button>
   </div>
-
-  <div class="count" id="count"></div>
+  <div class="count"><span id="count"></span><button class="link" id="btnClearDone" hidden>Quitar marcados</button></div>
   <ul id="list"></ul>
   <div class="empty" id="empty" hidden>La lista está vacía.<br>Escribe un producto o escanea un código de barras.</div>
 </main>
 
-<section id="catalog" aria-label="Catálogo de productos">
-  <div class="cat-head">
-    <div class="cat-top"><h2>📚 Catálogo</h2><button id="catClose" type="button">Listo</button></div>
-    <input id="catSearch" type="search" placeholder="Buscar producto (ej. leche, yogur, pan)…" autocomplete="off">
-    <select id="catStore" aria-label="Supermercado">
-      <option value="">Supermercado: cualquiera</option>
-      <option>Dia</option><option>Alteza</option><option>El Árbol</option><option>Mercadona</option>
-      <option>Carrefour</option><option>Lidl</option><option>Aldi</option><option>Eroski</option><option>Alcampo</option>
-    </select>
-  </div>
-  <div class="chips" id="catChips"></div>
-  <div class="cat-list" id="catList"></div>
-</section>
+<!-- ============ PRODUCTOS ============ -->
+<main id="tab-prod" hidden>
+  <p class="hint">Escanea productos para guardarlos con su nombre. Una vez guardados, se reconocen siempre, también sin internet.</p>
+  <button class="btn big" id="btnScanSave">📷 Escanear para guardar</button>
+  <div class="count"><span id="pCount"></span></div>
+  <input id="pFilter" type="search" placeholder="Buscar en mis productos…" autocomplete="off">
+  <ul id="pList"></ul>
+  <div class="empty" id="pEmpty" hidden>Aún no has guardado ningún producto.</div>
+</main>
 
-<section id="mine" aria-label="Mis productos">
-  <div class="cat-head">
-    <div class="cat-top"><h2>🗂️ Mis productos</h2><button id="mineClose" type="button">Listo</button></div>
-    <div class="cat-row">
-      <input id="pCode" inputmode="numeric" placeholder="Código de barras" autocomplete="off" style="flex:1;min-width:0">
-      <button class="btn" id="pScan" type="button" aria-label="Escanear código" style="min-height:0;padding:0 16px;background:rgba(255,255,255,.22)">📷</button>
-    </div>
-    <input id="pName" type="text" placeholder="Nombre del producto" autocomplete="off">
-    <button class="btn" id="pSave" type="button" style="background:#fff;color:#14654a">Guardar en mi base</button>
+<!-- ============ INVENTARIO ============ -->
+<main id="tab-inv" hidden>
+  <div class="homes">
+    <select id="homeSel" aria-label="Casa"></select>
+    <button id="homeEdit" aria-label="Renombrar o borrar casa">✎</button>
+    <button id="homeNew" aria-label="Nueva casa">＋</button>
   </div>
-  <div class="chips">
-    <button id="pExport" type="button">⬇ Exportar copia</button>
-    <button id="pImport" type="button">⬆ Importar</button>
-  </div>
-  <div style="padding:0 14px 6px"><input id="pFilter" type="search" placeholder="Buscar en mis productos…" autocomplete="off" style="width:100%;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)"></div>
-  <div class="cat-list" id="pList"></div>
-</section>
+  <button class="btn big" id="btnScanInv">📷 Escanear y contar</button>
+  <form class="add" id="invForm" autocomplete="off">
+    <input id="invInput" type="text" placeholder="Añadir sin código (ej. Plátanos)" enterkeyhint="done" aria-label="Producto sin código">
+    <button class="btn" type="submit" aria-label="Añadir">＋</button>
+  </form>
+  <div class="count"><span id="invCount"></span></div>
+  <ul id="invList"></ul>
+  <div class="empty" id="invEmpty" hidden>Este inventario está vacío.<br>Escanea los productos de esta casa para contarlos.</div>
+</main>
 
+<nav id="tabs">
+  <button data-tab="list" aria-label="Lista de la compra">🛒<span>Lista</span></button>
+  <button data-tab="prod" aria-label="Productos">🏷️<span>Productos</span></button>
+  <button data-tab="inv" aria-label="Inventario">🏠<span>Inventario</span></button>
+</nav>
+
+<!-- ============ ESCÁNER ============ -->
 <section id="scanner" aria-label="Escáner">
   <video id="video" playsinline muted></video>
   <div class="frame"></div>
+  <div class="sc-top">
+    <b id="scTitle"></b>
+    <div id="scToggle" hidden>
+      <button id="scPlus" type="button" class="on">➕ Sumar</button>
+      <button id="scMinus" type="button">➖ Restar</button>
+    </div>
+  </div>
   <div class="sc-bottom">
     <div class="sc-msg" id="scMsg">Apunta al código de barras</div>
     <form class="sc-row" id="manualForm">
-      <input id="manualCode" inputmode="numeric" placeholder="O escribe el código a mano" aria-label="Código manual">
+      <input id="manualCode" inputmode="numeric" placeholder="O escribe el código a mano" aria-label="Código manual" autocomplete="off">
       <button class="btn" type="submit">OK</button>
     </form>
-    <button class="btn sec" id="btnCloseScan" type="button">Cerrar escáner</button>
+    <button class="btn sec" id="btnCloseScan" type="button">Terminar</button>
   </div>
 </section>
 
+<!-- ============ DIÁLOGOS ============ -->
 <dialog id="dlgName">
-  <h3 id="dlgTitle">Producto nuevo</h3>
+  <h3 id="dlgTitle"></h3>
   <p id="dlgText" style="margin:0 0 10px;color:var(--mut);font-size:14px"></p>
-  <input id="dlgInput" type="text" placeholder="Nombre del producto">
-  <button class="btn sec" id="dlgWeb" type="button" style="width:100%;margin-bottom:12px" hidden>🔎 Buscar este código en Google</button>
+  <input id="dlgInput" type="text" autocomplete="off">
+  <button class="btn sec" id="dlgWeb" type="button" style="width:100%;margin-bottom:10px" hidden>🔎 Buscar este código en Google</button>
+  <button class="btn danger" id="dlgDel" type="button" style="width:100%;margin-bottom:10px" hidden></button>
   <div class="row">
     <button class="btn sec" id="dlgCancel" type="button">Cancelar</button>
-    <button class="btn" id="dlgOk" type="button">Añadir</button>
+    <button class="btn" id="dlgOk" type="button">Guardar</button>
   </div>
+</dialog>
+
+<dialog id="dlgAct">
+  <h3 id="actTitle"></h3>
+  <p id="actText" style="margin:0 0 12px;color:var(--mut);font-size:14px"></p>
+  <div class="col" id="actBtns"></div>
 </dialog>
 
 <dialog id="dlgMenu">
   <h3>Opciones</h3>
-  <div style="display:flex;flex-direction:column;gap:8px">
-    <button class="btn sec" id="mClearDone">Quitar los marcados</button>
-    <button class="btn sec" id="mUncheck">Desmarcar todos</button>
-    <button class="btn sec" id="mCopy">Copiar lista como texto</button>
-    <button class="btn sec" id="mWhats">Enviar por WhatsApp</button>
-    <button class="btn sec" id="mMine">🗂️ Mis productos</button>
-    <button class="btn sec" id="mDb">📦 Base de productos…</button>
-    <button class="btn sec" id="mImport">Importar lista pegada…</button>
-    <button class="btn sec" id="mClearAll" style="color:var(--danger)">Vaciar toda la lista</button>
+  <p style="margin:0 0 12px;color:var(--mut);font-size:14px">Tus datos se guardan solo en este móvil. Haz copias de vez en cuando.</p>
+  <div class="col">
+    <button class="btn sec" id="mBackup">💾 Guardar copia de seguridad</button>
+    <button class="btn sec" id="mRestore">♻️ Restaurar copia</button>
+    <button class="btn sec" id="mDb">📦 Cargar base de productos…</button>
     <button class="btn" id="mClose">Cerrar</button>
   </div>
 </dialog>
 
-<input type="file" id="pFile" accept=".json,application/json" hidden>
+<input type="file" id="bkFile" accept=".json,application/json" hidden>
 <input type="file" id="dbFile" accept=".json,application/json" hidden>
 <div id="toast"></div>
 
@@ -196,110 +207,156 @@
 <script>
 (() => {
   'use strict';
-  const KEY = 'lista-compra-v1';
-  const CACHE_KEY = 'lista-compra-barcodes-v1'; // código -> nombre recordado
   const $ = s => document.querySelector(s);
-
-  /* ---------- Estado + almacenamiento local ---------- */
-  let items = load(KEY, []);
-  let known = load(CACHE_KEY, {});
-  function load(k, d){ try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }
-  function save(){ try { localStorage.setItem(KEY, JSON.stringify(items)); localStorage.setItem(CACHE_KEY, JSON.stringify(known)); } catch {} }
+  const LS = { list: 'lista-compra-v1', known: 'lista-compra-barcodes-v1', inv: 'lista-compra-inv-v1', tab: 'lista-compra-tab' };
+  const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } };
+  const put = (k, v) => { try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch {} };
   const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const googleUrl = c => 'https://www.google.com/search?q=' + encodeURIComponent(c);
 
-  /* ---------- Lógica de lista ---------- */
-  function addItem(name, code, store){
+  /* ---------- Datos ---------- */
+  let items = load(LS.list, []);            // lista de la compra
+  let known = load(LS.known, {});           // productos guardados: código -> nombre
+  let inv = load(LS.inv, null);             // inventario por casas
+  function fixInv(){
+    if (!inv || !Array.isArray(inv.homes) || !inv.homes.length)
+      inv = { homes: [{ id: 'h1', name: 'Mi casa' }, { id: 'h2', name: 'Otra casa' }], cur: 'h1', items: { h1: {}, h2: {} } };
+    inv.items = inv.items || {};
+    inv.homes.forEach(h => { inv.items[h.id] = inv.items[h.id] || {}; });
+    if (!inv.homes.some(h => h.id === inv.cur)) inv.cur = inv.homes[0].id;
+  }
+  fixInv();
+  const saveList = () => put(LS.list, items);
+  const saveKnown = () => put(LS.known, known);
+  const saveInv = () => put(LS.inv, inv);
+  const curHome = () => inv.homes.find(h => h.id === inv.cur);
+  const curItems = () => inv.items[inv.cur];
+
+  /* ---------- Avisos y diálogos ---------- */
+  let toastT;
+  function toast(msg){
+    const t = $('#toast'); t.textContent = msg;
+    t.classList.toggle('top', $('#scanner').classList.contains('on'));
+    t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400);
+  }
+  const DEL = {};
+  function askName({ title, text = '', value = '', ok = 'Guardar', web = '', del = '' }){
+    return new Promise(res => {
+      const d = $('#dlgName'); $('#dlgTitle').textContent = title; $('#dlgText').textContent = text;
+      const inp = $('#dlgInput'); inp.value = value; $('#dlgOk').textContent = ok;
+      const wb = $('#dlgWeb'); wb.hidden = !web; wb.onclick = () => window.open(web, '_blank');
+      const db = $('#dlgDel'); db.hidden = !del; db.textContent = del;
+      const done = v => { if (d.open) d.close(); res(v); };
+      $('#dlgOk').onclick = () => done(inp.value.trim());
+      $('#dlgCancel').onclick = () => done(null);
+      db.onclick = () => done(DEL);
+      d.oncancel = e => { e.preventDefault(); done(null); };
+      inp.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); done(inp.value.trim()); } };
+      d.showModal(); setTimeout(() => { inp.focus(); inp.select(); }, 50);
+    });
+  }
+  function askAction(title, text, actions){
+    return new Promise(res => {
+      const d = $('#dlgAct'); $('#actTitle').textContent = title; $('#actText').textContent = text;
+      const box = $('#actBtns'); box.textContent = '';
+      const done = v => { if (d.open) d.close(); res(v); };
+      actions.forEach((a, i) => {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (a.cls || 'sec'); b.textContent = a.label;
+        b.onclick = () => done(i); box.append(b);
+      });
+      const c = document.createElement('button'); c.type = 'button'; c.className = 'btn sec'; c.textContent = 'Cerrar'; c.onclick = () => done(-1); box.append(c);
+      d.oncancel = e => { e.preventDefault(); done(-1); };
+      d.showModal();
+    });
+  }
+
+  /* ---------- Pestañas ---------- */
+  const TABS = ['list', 'prod', 'inv'];
+  const TITLES = { list: '🛒 Lista de la compra', prod: '🏷️ Productos', inv: '🏠 Inventario' };
+  function showTab(t){
+    if (!TABS.includes(t)) t = 'list';
+    TABS.forEach(x => { $('#tab-' + x).hidden = x !== t; document.querySelector(`#tabs [data-tab="${x}"]`).classList.toggle('on', x === t); });
+    $('#hTitle').textContent = TITLES[t]; put(LS.tab, t);
+    if (t === 'list') renderList(); if (t === 'prod') renderProd(); if (t === 'inv') renderInv();
+    window.scrollTo(0, 0);
+  }
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+  const curTab = () => TABS.find(t => !$('#tab-' + t).hidden) || 'list';
+
+  /* =====================================================
+     LISTA DE LA COMPRA
+     ===================================================== */
+  function addItem(name, code){
     name = (name || '').trim().replace(/\s+/g, ' ');
     if (!name) return null;
-    // Si ya existe (mismo código o mismo nombre), suma cantidad en vez de duplicar.
-    const lower = name.toLowerCase();
-    let ex = items.find(i => (code && i.code === code) || i.name.toLowerCase() === lower);
-    if (ex){ ex.qty += 1; ex.done = false; if (store && !ex.store) ex.store = store; save(); render(); return ex; }
-    ex = { id: uid(), name, qty: 1, done: false, code: code || '', store: store || '' };
-    items.unshift(ex);
-    save(); render();
-    return ex;
+    let ex = items.find(i => (code && i.code === code) || i.name.toLowerCase() === name.toLowerCase());
+    if (ex){ ex.qty += 1; ex.done = false; }
+    else { ex = { id: uid(), name, qty: 1, done: false, code: code || '' }; items.unshift(ex); }
+    saveList(); renderList(); return ex;
   }
   function fmtList(){
-    const pend = items.filter(i => !i.done), done = items.filter(i => i.done);
-    const line = i => `${i.qty > 1 ? i.qty + ' x ' : ''}${i.name}${i.store ? ' (' + i.store + ')' : ''}`;
+    const line = i => `${i.qty > 1 ? i.qty + ' x ' : ''}${i.name}`;
     let t = '🛒 Lista de la compra\n';
-    pend.forEach(i => t += `☐ ${line(i)}\n`);
-    done.forEach(i => t += `☑ ${line(i)}\n`);
+    items.filter(i => !i.done).forEach(i => t += `☐ ${line(i)}\n`);
+    items.filter(i => i.done).forEach(i => t += `☑ ${line(i)}\n`);
     return t.trim();
   }
-
-  /* ---------- Render ---------- */
-  function render(){
+  function renderList(){
     const ul = $('#list'); ul.textContent = '';
     const sorted = [...items.filter(i => !i.done), ...items.filter(i => i.done)];
     for (const it of sorted){
       const li = document.createElement('li'); if (it.done) li.className = 'done';
       const chk = document.createElement('input'); chk.type = 'checkbox'; chk.className = 'chk'; chk.checked = it.done;
       chk.setAttribute('aria-label', 'Marcar ' + it.name);
-      chk.onchange = () => { it.done = chk.checked; save(); render(); };
+      chk.onchange = () => { it.done = chk.checked; saveList(); renderList(); };
       const body = document.createElement('div'); body.className = 'body';
-      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = it.name;
-      body.append(nm);
-      const meta = [it.store, it.code].filter(Boolean).join(' · ');
-      if (meta){ const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta; body.append(m); }
-      body.onclick = () => rename(it);
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = it.name; body.append(nm);
       const q = document.createElement('div'); q.className = 'qty';
-      const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label','Menos');
+      const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', 'Menos');
       const num = document.createElement('span'); num.textContent = it.qty;
-      const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label','Más');
-      minus.onclick = () => { if (it.qty > 1){ it.qty--; save(); render(); } };
-      plus.onclick = () => { it.qty++; save(); render(); };
+      const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label', 'Más');
+      minus.onclick = () => { if (it.qty > 1){ it.qty--; saveList(); renderList(); } };
+      plus.onclick = () => { it.qty++; saveList(); renderList(); };
       q.append(minus, num, plus);
-      const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.setAttribute('aria-label','Borrar ' + it.name);
-      del.onclick = () => { items = items.filter(x => x.id !== it.id); save(); render(); };
-      li.append(chk, body, q, del);
-      ul.append(li);
+      const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Borrar ' + it.name);
+      del.onclick = () => { items = items.filter(x => x.id !== it.id); saveList(); renderList(); };
+      li.append(chk, body, q, del); ul.append(li);
     }
-    const pending = items.filter(i => !i.done).length;
+    const pending = items.filter(i => !i.done).length, done = items.length - pending;
     $('#empty').hidden = items.length > 0;
-    $('#count').textContent = items.length ? `${pending} pendiente${pending === 1 ? '' : 's'} · ${items.length - pending} en el carro` : '';
+    $('#count').textContent = items.length ? `${pending} pendiente${pending === 1 ? '' : 's'} · ${done} en el carro` : '';
+    $('#btnClearDone').hidden = !done;
   }
 
-  /* ---------- Utilidades UI ---------- */
-  let toastT;
-  function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400); }
-
-  function askName({title, text, value = '', ok = 'Añadir', web = ''}){
-    return new Promise(res => {
-      const d = $('#dlgName'); $('#dlgTitle').textContent = title; $('#dlgText').textContent = text || '';
-      const inp = $('#dlgInput'); inp.value = value; $('#dlgOk').textContent = ok;
-      const wb = $('#dlgWeb'); wb.hidden = !web; wb.onclick = () => window.open(web, '_blank');
-      const done = v => { d.close(); res(v); };
-      $('#dlgOk').onclick = () => done(inp.value.trim());
-      $('#dlgCancel').onclick = () => done(null);
-      d.oncancel = () => res(null);
-      inp.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); done(inp.value.trim()); } };
-      d.showModal(); setTimeout(() => { inp.focus(); inp.select(); }, 50);
-    });
-  }
-  async function rename(it){
-    const v = await askName({ title: 'Editar producto', value: it.name, ok: 'Guardar' });
-    if (v){ it.name = v; if (it.code) known[it.code] = v; save(); render(); }
-  }
-
-  /* ---------- Formulario manual ---------- */
-  $('#addForm').addEventListener('submit', e => {
-    e.preventDefault();
-    const inp = $('#addInput'); if (addItem(inp.value)) inp.value = '';
-    inp.focus();
-  });
-
-  /* ---------- Compartir ---------- */
-  async function shareList(){
-    if (!items.length){ toast('La lista está vacía'); return; }
-    const text = fmtList();
-    if (navigator.share){
-      try { await navigator.share({ title: 'Lista de la compra', text }); return; }
-      catch (e){ if (e && e.name === 'AbortError') return; }
+  // Sugerencias al escribir (catálogo interno + productos guardados)
+  const ALL = []; for (const c in (window.CATALOG || {})) for (const n of window.CATALOG[c]) ALL.push({ n, k: norm(n) });
+  function suggestions(q, limit){
+    const k = norm(q.trim()); if (!k) return [];
+    const pool = ALL.concat(Object.values(known).map(n => ({ n, k: norm(n) })));
+    const starts = [], inside = [], seen = new Set();
+    for (const e of pool){
+      if (seen.has(e.k)) continue; const i = e.k.indexOf(k);
+      if (i === 0){ starts.push(e); seen.add(e.k); } else if (i > 0){ inside.push(e); seen.add(e.k); }
     }
-    copyText(text);
+    return starts.concat(inside).slice(0, limit);
   }
+  const sugg = $('#sugg');
+  $('#addInput').addEventListener('input', e => {
+    sugg.textContent = '';
+    if (e.target.value.trim().length < 2) return;
+    for (const m of suggestions(e.target.value, 6)){
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = m.n;
+      b.onclick = () => { addItem(m.n); e.target.value = ''; sugg.textContent = ''; e.target.focus(); };
+      sugg.append(b);
+    }
+  });
+  $('#addForm').addEventListener('submit', e => {
+    e.preventDefault(); const inp = $('#addInput'); if (addItem(inp.value)) inp.value = '';
+    sugg.textContent = ''; inp.focus();
+  });
+  $('#btnClearDone').onclick = () => { items = items.filter(i => !i.done); saveList(); renderList(); };
+
   async function copyText(text){
     try { await navigator.clipboard.writeText(text); toast('Lista copiada'); }
     catch {
@@ -308,131 +365,174 @@
       ta.remove();
     }
   }
-  $('#btnShare').onclick = shareList;
-
-  /* ---------- Menú ---------- */
-  const menu = $('#dlgMenu');
-  $('#btnMenu').onclick = () => { menu.showModal(); refreshDbLabel(); };
-  $('#mClose').onclick = () => menu.close();
-  $('#mClearDone').onclick = () => { items = items.filter(i => !i.done); save(); render(); menu.close(); };
-  $('#mUncheck').onclick = () => { items.forEach(i => i.done = false); save(); render(); menu.close(); };
-  $('#mCopy').onclick = () => { menu.close(); if (items.length) copyText(fmtList()); else toast('La lista está vacía'); };
-  $('#mWhats').onclick = () => { menu.close(); if (!items.length) return toast('La lista está vacía'); window.open('https://wa.me/?text=' + encodeURIComponent(fmtList()), '_blank'); };
-  $('#mClearAll').onclick = () => { menu.close(); if (items.length && confirm('¿Vaciar toda la lista?')){ items = []; save(); render(); } };
-  $('#mImport').onclick = async () => {
-    menu.close();
-    const t = prompt('Pega aquí una lista (un producto por línea):');
-    if (!t) return;
-    let n = 0;
-    t.split(/\r?\n/).forEach(l => {
-      l = l.replace(/^[\s☐☑✔✓•\-\*]+/, '').replace(/^(\d+)\s*x\s+/i, '').trim();
-      if (l && !/^🛒/.test(l)){ addItem(l); n++; }
-    });
-    toast(n + ' producto(s) importados');
+  $('#btnShare').onclick = async () => {
+    if (!items.length) return toast('La lista está vacía');
+    const text = fmtList();
+    if (navigator.share){
+      try { await navigator.share({ title: 'Lista de la compra', text }); return; }
+      catch (e){ if (e && e.name === 'AbortError') return; }
+    }
+    copyText(text);
   };
 
-  /* ---------- Escáner ---------- */
-  let stream = null, scanning = false, detector = null, zxingReader = null, lastCode = '', lastAt = 0, captureCb = null;
-
-  async function openScanner(){
-    $('#scanner').classList.add('on'); $('#scMsg').textContent = 'Iniciando cámara…';
-    if (!window.isSecureContext){
-      $('#scMsg').textContent = 'La cámara solo funciona con https://. Abre la app desde su dirección https. Mientras, escribe el código a mano.'; return;
-    }
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      $('#scMsg').textContent = 'La cámara no está disponible aquí. Escribe el código a mano.'; return;
-    }
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-    } catch (e){
-      $('#scMsg').textContent = (e && e.name === 'NotAllowedError')
-        ? 'Permiso de cámara denegado. Actívalo en Ajustes → Apps → Lista de la compra → Permisos → Cámara. Mientras, escribe el código a mano.'
-        : 'No se pudo abrir la cámara (' + (e && e.name || 'error') + '). Escribe el código a mano.';
-      return;
-    }
-    const v = $('#video'); v.srcObject = stream; await v.play().catch(() => {});
-    $('#scMsg').textContent = 'Apunta al código de barras';
-    scanning = true;
-
-    if ('BarcodeDetector' in window){
-      try {
-        detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','qr_code'] });
-        loopNative(v); return;
-      } catch {}
-    }
-    loopZXing(v);
-  }
-  async function loopNative(v){
-    while (scanning){
-      try {
-        const r = await detector.detect(v);
-        if (r.length) await onCode(r[0].rawValue);
-      } catch {}
-      await new Promise(r => setTimeout(r, 150));
+  /* =====================================================
+     PRODUCTOS GUARDADOS
+     ===================================================== */
+  function renderProd(){
+    const ul = $('#pList'); ul.textContent = '';
+    const k = norm($('#pFilter').value.trim());
+    const all = Object.entries(known);
+    const rows = all.filter(([c, n]) => !k || norm(n).includes(k) || c.includes(k)).sort((a, b) => a[1].localeCompare(b[1], 'es'));
+    $('#pCount').textContent = all.length ? `${all.length} producto${all.length === 1 ? '' : 's'} guardado${all.length === 1 ? '' : 's'}` : '';
+    $('#pEmpty').hidden = all.length > 0;
+    for (const [code, name] of rows){
+      const li = document.createElement('li');
+      const body = document.createElement('div'); body.className = 'body';
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = name;
+      const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = code;
+      body.append(nm, meta);
+      body.onclick = async () => {
+        const v = await askName({ title: 'Editar producto', text: 'Código ' + code, value: known[code], del: 'Borrar este producto' });
+        if (v === DEL){ delete known[code]; saveKnown(); renderProd(); }
+        else if (v){ known[code] = v; saveKnown(); renderProd(); }
+      };
+      li.append(body); ul.append(li);
     }
   }
-  function loopZXing(v){
-    if (!window.ZXing){ $('#scMsg').textContent = 'Escáner no disponible. Escribe el código a mano.'; return; }
-    const hints = new Map();
-    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.ITF]);
-    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
-    zxingReader = new ZXing.MultiFormatReader(); zxingReader.setHints(hints);
-    const cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
-    (async function tick(){
-      while (scanning){
-        if (v.videoWidth){
-          cv.width = v.videoWidth; cv.height = v.videoHeight;
-          ctx.drawImage(v, 0, 0);
-          try {
-            const lum = new ZXing.RGBLuminanceSource(toLum(ctx.getImageData(0, 0, cv.width, cv.height)), cv.width, cv.height);
-            const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
-            const r = zxingReader.decode(bmp);
-            if (r) await onCode(r.getText());
-          } catch {}
+  $('#pFilter').addEventListener('input', renderProd);
+
+  /* =====================================================
+     INVENTARIO (una lista por casa)
+     ===================================================== */
+  function invAdd(key, name, delta){
+    const it = curItems()[key] || (curItems()[key] = { name, qty: 0 });
+    it.name = name || it.name; it.qty = Math.max(0, it.qty + delta);
+    saveInv(); return it;
+  }
+  function renderHomes(){
+    const s = $('#homeSel'); s.textContent = '';
+    inv.homes.forEach(h => { const o = document.createElement('option'); o.value = h.id; o.textContent = h.name; s.append(o); });
+    s.value = inv.cur;
+  }
+  function renderInv(){
+    renderHomes();
+    const ul = $('#invList'); ul.textContent = '';
+    const entries = Object.entries(curItems()).sort((a, b) => a[1].name.localeCompare(b[1].name, 'es'));
+    $('#invEmpty').hidden = entries.length > 0;
+    const units = entries.reduce((s, [, v]) => s + v.qty, 0);
+    $('#invCount').textContent = entries.length ? `${entries.length} producto${entries.length === 1 ? '' : 's'} · ${units} unidad${units === 1 ? '' : 'es'}` : '';
+    for (const [key, it] of entries){
+      const li = document.createElement('li'); if (it.qty === 0) li.className = 'zero';
+      const body = document.createElement('div'); body.className = 'body';
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = it.name; body.append(nm);
+      if (it.qty === 0){ const m = document.createElement('div'); m.className = 'meta'; m.textContent = 'Agotado'; body.append(m); }
+      body.onclick = async () => {
+        const r = await askAction(it.name, curHome().name + ': ' + it.qty + ' unidad' + (it.qty === 1 ? '' : 'es'), [
+          { label: '🛒 Añadir a la lista de la compra', cls: '' },
+          { label: 'Poner la cantidad exacta…' },
+          { label: 'Quitar del inventario', cls: 'danger' }
+        ]);
+        if (r === 0){ addItem(it.name, /^\d+$/.test(key) ? key : ''); toast('Añadido a la lista'); }
+        else if (r === 1){
+          const v = await askName({ title: 'Cantidad de ' + it.name, value: String(it.qty), ok: 'Guardar' });
+          const n = parseInt(v, 10); if (v && v !== DEL && n >= 0){ it.qty = n; saveInv(); renderInv(); }
         }
-        await new Promise(r => setTimeout(r, 200));
+        else if (r === 2){ delete curItems()[key]; saveInv(); renderInv(); }
+      };
+      const q = document.createElement('div'); q.className = 'qty';
+      const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', 'Menos');
+      const num = document.createElement('span'); num.textContent = it.qty;
+      const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label', 'Más');
+      minus.onclick = () => { if (it.qty > 0){ it.qty--; saveInv(); renderInv(); } };
+      plus.onclick = () => { it.qty++; saveInv(); renderInv(); };
+      q.append(minus, num, plus);
+      li.append(body, q); ul.append(li);
+    }
+  }
+  $('#homeSel').onchange = e => { inv.cur = e.target.value; saveInv(); renderInv(); };
+  $('#homeNew').onclick = async () => {
+    const n = await askName({ title: 'Nueva casa', text: 'Tendrá su propio inventario, separado de las demás.', ok: 'Crear' });
+    if (n && n !== DEL){ const id = 'h' + uid(); inv.homes.push({ id, name: n }); inv.items[id] = {}; inv.cur = id; saveInv(); renderInv(); }
+  };
+  $('#homeEdit').onclick = async () => {
+    const h = curHome();
+    const v = await askName({ title: 'Casa', value: h.name, ok: 'Guardar', del: inv.homes.length > 1 ? 'Borrar esta casa y su inventario' : '' });
+    if (v === DEL){
+      if (confirm('¿Borrar «' + h.name + '» y todo su inventario?')){
+        inv.homes = inv.homes.filter(x => x.id !== h.id); delete inv.items[h.id]; fixInv(); saveInv(); renderInv();
       }
-    })();
-  }
-  function toLum(img){
-    const d = img.data, out = new Uint8ClampedArray(img.width * img.height);
-    for (let i = 0, j = 0; i < d.length; i += 4, j++) out[j] = (d[i] * 306 + d[i+1] * 601 + d[i+2] * 117) >> 10;
-    return out;
-  }
-  function closeScanner(){
-    scanning = false; captureCb = null;
-    if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
-    $('#video').srcObject = null; $('#scanner').classList.remove('on'); $('#manualCode').value = '';
-  }
+    } else if (v){ h.name = v; saveInv(); renderInv(); }
+  };
+  $('#invForm').addEventListener('submit', e => {
+    e.preventDefault(); const inp = $('#invInput'); const n = inp.value.trim().replace(/\s+/g, ' ');
+    if (!n) return;
+    invAdd('n:' + norm(n), n, 1); inp.value = ''; renderInv();
+  });
 
-  async function onCode(code){
-    code = String(code || '').trim();
-    const now = Date.now();
-    if (!code || (code === lastCode && now - lastAt < 3000)) return;
-    lastCode = code; lastAt = now;
-    if (captureCb){ const cb = captureCb; captureCb = null; closeScanner(); cb(code); return; }
-    scanning = false;                       // pausa mientras gestionamos el código
-    if (navigator.vibrate) navigator.vibrate(60);
-    $('#scMsg').textContent = 'Código ' + code + ' — buscando…';
-
-    let name = known[code];
-    if (!name){ name = await lookup(code); }
-    if (!name){
-      name = await askName({ title: 'Producto no encontrado', text: 'Código ' + code + '. Ponle un nombre y lo recordaré la próxima vez.', web: 'https://www.google.com/search?q=' + encodeURIComponent(code) });
-    }
-    if (name){
-      known[code] = name;
-      addItem(name, code);
-      toast('Añadido: ' + name);
-    }
-    // Reanudar escaneo
-    if ($('#scanner').classList.contains('on')){
-      scanning = true; $('#scMsg').textContent = 'Apunta al código de barras';
-      if (detector) loopNative($('#video')); else loopZXing($('#video'));
-    }
+  /* =====================================================
+     BASE LOCAL DE PRODUCTOS (opcional, IndexedDB)
+     ===================================================== */
+  const DB_NAME = 'lista-compra-db', S_P = 'p', S_M = 'm';
+  let dbp = null;
+  function idb(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      try {
+        const rq = indexedDB.open(DB_NAME, 1);
+        rq.onupgradeneeded = () => { rq.result.createObjectStore(S_P); rq.result.createObjectStore(S_M); };
+        rq.onsuccess = () => res(rq.result); rq.onerror = () => rej(rq.error);
+      } catch (e){ rej(e); }
+    });
+    return dbp;
   }
+  const rq2p = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const txDone = t => new Promise((res, rej) => { t.oncomplete = res; t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); });
+  async function dbGet(store, key){ try { const d = await idb(); return await rq2p(d.transaction(store).objectStore(store).get(key)); } catch { return undefined; } }
+  async function dbImport(data, version){
+    const d = await idb(), codes = Object.keys(data);
+    let t = d.transaction(S_P, 'readwrite'); t.objectStore(S_P).clear(); await txDone(t);
+    for (let i = 0; i < codes.length; i += 20000){
+      t = d.transaction(S_P, 'readwrite'); const s = t.objectStore(S_P);
+      for (const c of codes.slice(i, i + 20000)) if (typeof data[c] === 'string') s.put(data[c], c);
+      await txDone(t);
+    }
+    t = d.transaction(S_M, 'readwrite'); t.objectStore(S_M).put({ version, count: codes.length }, 'info'); await txDone(t);
+    return codes.length;
+  }
+  async function lookupLocal(code){
+    const cands = [code];
+    if (code.length === 12) cands.push('0' + code);
+    if (code.length === 13 && code[0] === '0') cands.push(code.slice(1));
+    for (const c of cands){ const v = await dbGet(S_P, c); if (typeof v === 'string' && v) return v; }
+    return null;
+  }
+  async function syncDb(){
+    try {
+      if (!navigator.onLine) return;
+      const r = await fetch('productos.meta.json', { cache: 'no-cache' }); if (!r.ok) return;
+      const meta = await r.json(); if (!meta || !meta.count) return;
+      const cur = await dbGet(S_M, 'info');
+      if (cur && (cur.version === meta.version || String(cur.version).startsWith('manual:'))) return;
+      toast('Actualizando base de productos…');
+      const r2 = await fetch('productos.json', { cache: 'no-cache' }); if (!r2.ok) return;
+      const j = await r2.json();
+      const n = await dbImport(j.data && typeof j.data === 'object' ? j.data : j, meta.version);
+      toast('Base de productos lista: ' + n.toLocaleString('es') + ' productos');
+    } catch {}
+  }
+  $('#dbFile').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    toast('Importando…');
+    try {
+      const j = JSON.parse(await f.text());
+      const n = await dbImport(j && j.data && typeof j.data === 'object' ? j.data : j, 'manual:' + Date.now());
+      toast('Importados ' + n.toLocaleString('es') + ' productos');
+    } catch { toast('Archivo no válido'); }
+  };
 
-  // Familia Open Facts (misma API, sin clave): alimentos, cosmética, productos del hogar y mascotas
+  /* =====================================================
+     BÚSQUEDA DE NOMBRES POR CÓDIGO
+     ===================================================== */
   const OPEN_HOSTS = ['openfoodfacts', 'openbeautyfacts', 'openproductsfacts', 'openpetfoodfacts'];
   async function lookupOpen(host, code){
     try {
@@ -442,315 +542,184 @@
       const j = await r.json();
       if (j && j.status === 1 && j.product){
         const p = j.product, n = (p.product_name_es || p.product_name || '').trim();
-        if (n){ const b = (p.brands || '').split(',')[0].trim(); return b && !n.toLowerCase().includes(b.toLowerCase()) ? `${n} (${b})` : n; }
+        if (n){ const b = (p.brands || '').split(',')[0].trim(); return b && !norm(n).includes(norm(b)) ? `${n} (${b})` : n; }
       }
     } catch {}
     return null;
   }
-  async function lookupOFF(code){
-    if (!navigator.onLine) return null;
-    const res = await Promise.all(OPEN_HOSTS.map(h => lookupOpen(h, code)));   // en paralelo
-    return res.find(Boolean) || null;                                          // gana el primero por orden
-  }
-
-  // UPCitemdb (API gratuita sin clave: 100 consultas/día y 6 por minuto)
   async function lookupUPC(code){
-    if (!navigator.onLine) return null;
     try {
       const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 7000);
       const r = await fetch('https://api.upcitemdb.com/prod/trial/lookup?upc=' + encodeURIComponent(code), { signal: ctl.signal, headers: { Accept: 'application/json' } });
-      clearTimeout(t);
-      if (!r.ok) return null;                         // 404 = no existe, 429 = límite alcanzado
-      const j = await r.json();
-      const it = j && j.items && j.items[0];
-      if (!it || !it.title) return null;
+      clearTimeout(t); if (!r.ok) return null;
+      const j = await r.json(), it = j && j.items && j.items[0]; if (!it || !it.title) return null;
       let n = String(it.title).replace(/\s+/g, ' ').trim();
       if (n.length > 70) n = n.slice(0, 70).replace(/\s+\S*$/, '') + '…';
       const b = (it.brand || '').trim();
-      return b && !n.toLowerCase().includes(b.toLowerCase()) ? `${n} (${b})` : n;
+      return b && !norm(n).includes(norm(b)) ? `${n} (${b})` : n;
     } catch { return null; }
   }
-  // Busca en orden: base local (sin internet) → Open Food Facts → UPCitemdb
+  // Orden: base local → familia Open Facts (a la vez) → UPCitemdb
   async function lookup(code){
-    return (await lookupLocal(code)) || (await lookupOFF(code)) || (await lookupUPC(code));
+    const loc = await lookupLocal(code); if (loc) return loc;
+    if (!navigator.onLine) return null;
+    const res = await Promise.all(OPEN_HOSTS.map(h => lookupOpen(h, code)));
+    return res.find(Boolean) || (await lookupUPC(code));
   }
 
-  $('#btnScan').onclick = openScanner;
-  $('#btnCloseScan').onclick = closeScanner;
-  $('#manualForm').addEventListener('submit', e => { e.preventDefault(); const c = $('#manualCode').value.trim(); if (c){ $('#manualCode').value = ''; onCode(c); } });
-  document.addEventListener('visibilitychange', () => { if (document.hidden && stream) closeScanner(); });
+  /* =====================================================
+     ESCÁNER (modos: list · save · inv)
+     ===================================================== */
+  let stream = null, running = false, paused = false, detector = null, scanMode = null, invDelta = 1;
+  let lastCode = '', lastSeen = 0;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const setMsg = t => { $('#scMsg').textContent = t; };
+  const DEFAULT_MSG = 'Apunta al código de barras';
 
+  function setDelta(d){ invDelta = d; $('#scPlus').classList.toggle('on', d > 0); $('#scMinus').classList.toggle('on', d < 0); }
+  $('#scPlus').onclick = () => setDelta(1);
+  $('#scMinus').onclick = () => setDelta(-1);
 
-  /* ---------- Catálogo, autocompletado y búsqueda online ---------- */
-  const CAT = window.CATALOG || {};
-  const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const ALL = []; for (const c in CAT) for (const n of CAT[c]) ALL.push({ n, c, k: norm(n) });
-  const STORE_TAGS = { 'Dia':'dia', 'Alteza':'alteza', 'El Árbol':'el-arbol', 'Mercadona':'mercadona', 'Carrefour':'carrefour', 'Lidl':'lidl', 'Aldi':'aldi', 'Eroski':'eroski', 'Alcampo':'alcampo' };
-
-  function matches(q, limit){
-    const k = norm(q.trim()); if (!k) return [];
-    const starts = [], inside = [], seen = new Set();
-    const pool = ALL.concat(Object.values(known).map(n => ({ n, c: '', k: norm(n) })));
-    for (const e of pool){
-      if (seen.has(e.k)) continue;
-      const i = e.k.indexOf(k);
-      if (i === 0){ starts.push(e); seen.add(e.k); } else if (i > 0){ inside.push(e); seen.add(e.k); }
-    }
-    return starts.concat(inside).slice(0, limit || 50);
-  }
-
-  // Sugerencias mientras escribes en el campo principal
-  const sugg = $('#sugg');
-  $('#addInput').addEventListener('input', e => {
-    sugg.textContent = '';
-    const v = e.target.value;
-    if (v.trim().length < 2) return;
-    for (const m of matches(v, 6)){
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = m.n;
-      b.onclick = () => { addItem(m.n); e.target.value = ''; sugg.textContent = ''; e.target.focus(); };
-      sugg.append(b);
-    }
-  });
-  $('#addForm').addEventListener('submit', () => { sugg.textContent = ''; });
-
-  // Pantalla de catálogo
-  let catSel = 'Todas', catQ = '', onlineRes = null, onlineMsg = '';
-  const cat = $('#catalog');
-  function qtyInList(name){ const i = items.find(x => x.name.toLowerCase() === name.toLowerCase() && !x.done); return i ? i.qty : 0; }
-  function renderChips(){
-    const box = $('#catChips'); box.textContent = '';
-    for (const c of ['Todas', ...Object.keys(CAT)]){
-      const b = document.createElement('button'); b.type = 'button'; b.textContent = c; if (c === catSel) b.className = 'on';
-      b.onclick = () => { catSel = c; renderChips(); renderCatalog(); $('#catList').scrollTop = 0; };
-      box.append(b);
-    }
-  }
-  function prRow(name, store, code){
-    const d = document.createElement('div'); d.className = 'pr';
-    const n = document.createElement('div'); n.className = 'n'; n.textContent = name;
-    const inl = document.createElement('span'); inl.className = 'in';
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = '+'; b.setAttribute('aria-label', 'Añadir ' + name);
-    const upd = () => { const q = qtyInList(name); inl.textContent = q ? '×' + q : ''; };
-    b.onclick = () => { addItem(name, code, store || ''); upd(); if (navigator.vibrate) navigator.vibrate(20); };
-    upd(); d.append(n, inl, b); return d;
-  }
-  function renderCatalog(){
-    const box = $('#catList'); box.textContent = '';
-    const store = $('#catStore').value;
-    const k = norm(catQ.trim());
-    let shown = 0;
-    for (const c of Object.keys(CAT)){
-      if (catSel !== 'Todas' && catSel !== c) continue;
-      const list = CAT[c].filter(n => !k || norm(n).includes(k));
-      if (!list.length) continue;
-      const h4 = document.createElement('h4'); h4.textContent = c; box.append(h4);
-      list.forEach(n => { box.append(prRow(n, store)); shown++; });
-    }
-    if (!shown){ const d = document.createElement('div'); d.className = 'note'; d.textContent = 'No hay coincidencias en el catálogo.'; box.append(d); }
-    if (k.length >= 2){
-      const ob = document.createElement('button'); ob.type = 'button'; ob.className = 'btn online';
-      ob.textContent = '🌐 Buscar «' + catQ.trim() + '» con marcas' + (store ? ' (' + store + ')' : '') + ' online';
-      ob.onclick = () => runOnline(); box.append(ob);
-    }
-    if (onlineMsg){ const d = document.createElement('div'); d.className = 'note'; d.textContent = onlineMsg; box.append(d); }
-    if (onlineRes && onlineRes.length){
-      const h4 = document.createElement('h4'); h4.textContent = 'Resultados online (Open Food Facts)'; box.append(h4);
-      onlineRes.forEach(r => box.append(prRow(r.name, store, r.code)));
-    }
-  }
-  async function runOnline(){
-    const q = catQ.trim(), store = $('#catStore').value;
-    if (q.length < 2) return;
-    if (!navigator.onLine){ onlineMsg = 'Sin conexión: la búsqueda online necesita internet.'; onlineRes = null; renderCatalog(); return; }
-    onlineMsg = 'Buscando…'; onlineRes = null; renderCatalog();
-    const build = withStore => {
-      const p = new URLSearchParams({ search_terms: q, search_simple: '1', action: 'process', json: '1', page_size: '30', fields: 'code,product_name,product_name_es,brands,quantity' });
-      p.set('tagtype_0', 'countries'); p.set('tag_contains_0', 'contains'); p.set('tag_0', 'spain');
-      if (withStore && store){ p.set('tagtype_1', 'stores'); p.set('tag_contains_1', 'contains'); p.set('tag_1', STORE_TAGS[store] || norm(store).replace(/\s+/g, '-')); }
-      return 'https://world.openfoodfacts.org/cgi/search.pl?' + p;
-    };
-    const get = async url => {
-      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 9000);
-      try { const r = await fetch(url, { signal: ctl.signal }); return (await r.json()).products || []; }
-      finally { clearTimeout(t); }
-    };
+  async function openScanner(mode){
+    scanMode = mode; setDelta(1);
+    $('#scTitle').textContent = mode === 'list' ? 'Añadir a la lista de la compra' : mode === 'save' ? 'Guardar productos' : 'Inventario · ' + curHome().name;
+    $('#scToggle').hidden = mode !== 'inv';
+    $('#scanner').classList.add('on'); setMsg('Iniciando cámara…');
+    lastCode = ''; lastSeen = 0; paused = false;
+    if (!window.isSecureContext){ setMsg('La cámara solo funciona con https://. Mientras, escribe el código a mano.'); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){ setMsg('La cámara no está disponible aquí. Escribe el código a mano.'); return; }
     try {
-      let prods = await get(build(true)), fallback = false;
-      if (!prods.length && store){ prods = await get(build(false)); fallback = true; }
-      const seen = new Set(), out = [];
-      for (const p of prods){
-        const n = (p.product_name_es || p.product_name || '').trim(); if (!n) continue;
-        const b = (p.brands || '').split(',')[0].trim();
-        let name = b && !norm(n).includes(norm(b)) ? `${n} (${b})` : n;
-        if (p.quantity) name += ' ' + String(p.quantity).trim();
-        const key = norm(name); if (seen.has(key)) continue; seen.add(key);
-        out.push({ name, code: p.code || '' });
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    } catch (e){
+      setMsg((e && e.name === 'NotAllowedError')
+        ? 'Permiso de cámara denegado. Actívalo en Ajustes → Apps → Lista de la compra → Permisos → Cámara. Mientras, escribe el código a mano.'
+        : 'No se pudo abrir la cámara (' + (e && e.name || 'error') + '). Escribe el código a mano.');
+      return;
+    }
+    if (!$('#scanner').classList.contains('on')){ stream.getTracks().forEach(t => t.stop()); stream = null; return; }
+    const v = $('#video'); v.srcObject = stream; await v.play().catch(() => {});
+    setMsg(DEFAULT_MSG);
+    running = true; scanLoop(v);
+  }
+
+  // Un único bucle de lectura mientras el escáner está abierto
+  async function scanLoop(v){
+    let native = null, reader = null, cv = null, ctx = null;
+    if ('BarcodeDetector' in window){
+      try { native = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'itf'] }); } catch {}
+    }
+    if (!native){
+      if (!window.ZXing){ setMsg('Escáner no disponible. Escribe el código a mano.'); return; }
+      const hints = new Map();
+      hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.ITF]);
+      hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+      reader = new ZXing.MultiFormatReader(); reader.setHints(hints);
+      cv = document.createElement('canvas'); ctx = cv.getContext('2d', { willReadFrequently: true });
+    }
+    const toLum = img => { const d = img.data, o = new Uint8ClampedArray(img.width * img.height); for (let i = 0, j = 0; i < d.length; i += 4, j++) o[j] = (d[i] * 306 + d[i + 1] * 601 + d[i + 2] * 117) >> 10; return o; };
+    while (running){
+      let code = null;
+      if (!paused && v.videoWidth){
+        try {
+          if (native){ const r = await native.detect(v); if (r.length) code = r[0].rawValue; }
+          else {
+            cv.width = v.videoWidth; cv.height = v.videoHeight; ctx.drawImage(v, 0, 0);
+            const lum = new ZXing.RGBLuminanceSource(toLum(ctx.getImageData(0, 0, cv.width, cv.height)), cv.width, cv.height);
+            code = reader.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum))).getText();
+          }
+        } catch {}
       }
-      onlineRes = out;
-      onlineMsg = !out.length ? 'Sin resultados online. Prueba con otra palabra.'
-        : fallback ? 'No hay resultados etiquetados de ' + store + '. Te muestro productos de España.' : '';
-    } catch { onlineRes = null; onlineMsg = 'No se pudo buscar online. Comprueba tu conexión.'; }
-    renderCatalog();
-  }
-  function openCatalog(){ cat.classList.add('on'); renderChips(); renderCatalog(); }
-  function closeCatalog(){ cat.classList.remove('on'); }
-  $('#btnCatalog').onclick = openCatalog;
-  $('#catClose').onclick = closeCatalog;
-  $('#catSearch').addEventListener('input', e => { catQ = e.target.value; onlineRes = null; onlineMsg = ''; renderCatalog(); });
-  $('#catStore').addEventListener('change', () => { onlineRes = null; onlineMsg = ''; renderCatalog(); try { localStorage.setItem('lista-compra-store', $('#catStore').value); } catch {} });
-  try { const s = localStorage.getItem('lista-compra-store'); if (s) $('#catStore').value = s; } catch {}
-  window.addEventListener('popstate', closeCatalog);
-
-
-  /* ---------- Base de productos local (IndexedDB) ---------- */
-  const DB_NAME = 'lista-compra-db', S_P = 'p', S_M = 'm';
-  let dbp = null;
-  function idb(){
-    if (dbp) return dbp;
-    dbp = new Promise((res, rej) => {
-      try {
-        const rq = indexedDB.open(DB_NAME, 1);
-        rq.onupgradeneeded = () => { rq.result.createObjectStore(S_P); rq.result.createObjectStore(S_M); };
-        rq.onsuccess = () => res(rq.result);
-        rq.onerror = () => rej(rq.error);
-      } catch (e){ rej(e); }
-    });
-    return dbp;
-  }
-  const rq2p = r => new Promise((res, rej) => { r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
-  const txDone = t => new Promise((res, rej) => { t.oncomplete = res; t.onerror = () => rej(t.error); t.onabort = () => rej(t.error); });
-  async function dbGet(store, key){
-    try { const d = await idb(); return await rq2p(d.transaction(store).objectStore(store).get(key)); } catch { return undefined; }
-  }
-  async function dbImport(data, version){
-    const d = await idb(), codes = Object.keys(data);
-    let t = d.transaction(S_P, 'readwrite'); t.objectStore(S_P).clear(); await txDone(t);
-    const CH = 20000;
-    for (let i = 0; i < codes.length; i += CH){
-      t = d.transaction(S_P, 'readwrite'); const s = t.objectStore(S_P);
-      for (const c of codes.slice(i, i + CH)) if (typeof data[c] === 'string') s.put(data[c], c);
-      await txDone(t);
+      if (code && running){
+        const now = Date.now();
+        // el mismo producto sigue a la vista: no se vuelve a contar hasta que se aparte
+        const dup = code === lastCode && now - lastSeen < 900;
+        lastSeen = now; lastCode = code;
+        if (!dup) await processCode(code);
+      }
+      await sleep(native ? 130 : 200);
     }
-    t = d.transaction(S_M, 'readwrite'); t.objectStore(S_M).put({ version, count: codes.length }, 'info'); await txDone(t);
-    return codes.length;
   }
-  async function lookupLocal(code){
-    const cands = [code];
-    if (code.length === 12) cands.push('0' + code);                 // UPC-A leído como EAN-13
-    if (code.length === 13 && code[0] === '0') cands.push(code.slice(1));
-    for (const c of cands){ const v = await dbGet(S_P, c); if (typeof v === 'string' && v) return v; }
-    return null;
+  async function processCode(code){
+    code = String(code).trim(); if (!code || paused) return;
+    paused = true;
+    try { await handle(code); } catch {}
+    finally { paused = false; lastCode = code; lastSeen = Date.now(); if ($('#scanner').classList.contains('on')) setMsg(DEFAULT_MSG); }
   }
-  // Descarga la base publicada junto a la app (productos.json) solo si ha cambiado
-  async function syncDb(){
+
+  async function handle(code){
+    if (navigator.vibrate) navigator.vibrate(60);
+    let name = known[code];
+    if (!name){ setMsg('Buscando ' + code + '…'); name = await lookup(code); }
+    if (scanMode === 'save' && known[code]){ toast('Ya estaba guardado: ' + known[code]); return; }
+    if (scanMode === 'inv' && invDelta < 0 && !curItems()[code]){ toast('No está en el inventario: ' + (name || code)); return; }
+    if (!name){
+      name = await askName({ title: 'Producto nuevo', text: 'Código ' + code + '. No lo encuentro: ponle un nombre y lo recordaré.', ok: scanMode === 'save' ? 'Guardar' : 'Añadir', web: googleUrl(code) });
+      if (!name || name === DEL) return;
+    }
+    const isNew = !known[code];
+    known[code] = name; saveKnown();
+    if (scanMode === 'save'){ toast((isNew ? 'Guardado: ' : 'Actualizado: ') + name); }
+    else if (scanMode === 'list'){ addItem(name, code); toast('Añadido: ' + name); }
+    else if (scanMode === 'inv'){ const it = invAdd(code, name, invDelta); toast(`${name}: ${it.qty}`); }
+  }
+
+  function closeScanner(){
+    running = false; paused = false; scanMode = null;
+    if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+    $('#video').srcObject = null; $('#scanner').classList.remove('on'); $('#manualCode').value = '';
+    const t = curTab(); if (t === 'list') renderList(); else if (t === 'prod') renderProd(); else renderInv();
+  }
+  $('#btnCloseScan').onclick = closeScanner;
+  $('#manualForm').addEventListener('submit', e => { e.preventDefault(); const c = $('#manualCode').value.trim(); if (c){ $('#manualCode').value = ''; processCode(c); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && $('#scanner').classList.contains('on') && stream) closeScanner(); });
+  $('#btnScanList').onclick = () => openScanner('list');
+  $('#btnScanSave').onclick = () => openScanner('save');
+  $('#btnScanInv').onclick = () => openScanner('inv');
+
+  /* =====================================================
+     MENÚ: copia de seguridad
+     ===================================================== */
+  const menu = $('#dlgMenu');
+  $('#btnMore').onclick = () => menu.showModal();
+  $('#mClose').onclick = () => menu.close();
+  $('#mDb').onclick = () => { menu.close(); $('#dbFile').click(); };
+  $('#mRestore').onclick = () => { menu.close(); $('#bkFile').click(); };
+  $('#mBackup').onclick = async () => {
+    menu.close();
+    const data = { app: 'lista-compra', v: 2, fecha: new Date().toISOString(), list: items, products: known, inventory: inv };
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
     try {
-      if (!navigator.onLine) return;
-      const r = await fetch('productos.meta.json', { cache: 'no-cache' });
-      if (!r.ok) return;
-      const meta = await r.json();
-      if (!meta || !meta.count) return;
-      const cur = await dbGet(S_M, 'info');
-      if (cur && (cur.version === meta.version || String(cur.version).startsWith('manual:'))) return;
-      toast('Actualizando base de productos…');
-      const r2 = await fetch('productos.json', { cache: 'no-cache' });
-      if (!r2.ok) return;
-      const j = await r2.json();
-      const n = await dbImport(j.data && typeof j.data === 'object' ? j.data : j, meta.version);
-      toast('Base de productos lista: ' + n.toLocaleString('es') + ' productos');
-    } catch {}
-  }
-  async function refreshDbLabel(){
-    const i = await dbGet(S_M, 'info');
-    $('#mDb').textContent = '📦 Base de productos' + (i && i.count ? ' (' + i.count.toLocaleString('es') + ')' : '') + ' · importar archivo…';
-  }
-  $('#mDb').onclick = () => $('#dbFile').click();
-  $('#dbFile').onchange = async e => {
+      const file = new File([blob], 'copia-lista-compra.json', { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){ await navigator.share({ files: [file], title: 'Copia de seguridad' }); return; }
+    } catch (e){ if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'copia-lista-compra.json';
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Copia guardada');
+  };
+  $('#bkFile').onchange = async e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    menu.close(); toast('Importando…');
     try {
       const j = JSON.parse(await f.text());
-      const n = await dbImport(j && j.data && typeof j.data === 'object' ? j.data : j, 'manual:' + Date.now());
-      toast('Importados ' + n.toLocaleString('es') + ' productos');
-    } catch { toast('Archivo no válido'); }
-  };
-  setTimeout(syncDb, 1500);
-
-  /* ---------- Mis productos (base propia) ---------- */
-  const validCode = c => /^\d{8,14}$/.test(c);
-  function renderMine(){
-    const box = $('#pList'); box.textContent = '';
-    const k = norm($('#pFilter').value.trim());
-    const all = Object.entries(known);
-    const rows = all.filter(([c, n]) => !k || norm(n).includes(k) || c.includes(k)).sort((a, b) => a[1].localeCompare(b[1], 'es'));
-    if (!rows.length){
-      const d = document.createElement('div'); d.className = 'note';
-      d.textContent = all.length ? 'Sin coincidencias.' : 'Aún no tienes productos propios. Escanea o escribe un código arriba y ponle nombre.';
-      box.append(d); return;
-    }
-    const h4 = document.createElement('h4'); h4.textContent = rows.length + ' producto' + (rows.length === 1 ? '' : 's'); box.append(h4);
-    for (const [code, name] of rows){
-      const d = document.createElement('div'); d.className = 'pr';
-      const n = document.createElement('div'); n.className = 'n';
-      n.append(document.createTextNode(name));
-      const sub = document.createElement('div'); sub.className = 'sub'; sub.textContent = code; n.append(sub);
-      n.onclick = async () => {
-        const v = await askName({ title: 'Editar producto', text: 'Código ' + code, value: known[code], ok: 'Guardar' });
-        if (v){ known[code] = v; save(); renderMine(); }
-      };
-      const del = document.createElement('button'); del.type = 'button'; del.className = 'red'; del.textContent = '✕'; del.setAttribute('aria-label', 'Borrar ' + name);
-      del.onclick = () => { if (confirm('¿Borrar «' + name + '» de tu base?')){ delete known[code]; save(); renderMine(); } };
-      d.append(n, del); box.append(d);
-    }
-  }
-  function saveMine(){
-    const code = $('#pCode').value.replace(/\D/g, '');
-    const name = $('#pName').value.trim().replace(/\s+/g, ' ');
-    if (!validCode(code)) return toast('El código debe tener entre 8 y 14 cifras');
-    if (!name) return toast('Escribe el nombre del producto');
-    const had = known[code]; known[code] = name; save();
-    $('#pCode').value = ''; $('#pName').value = '';
-    renderMine(); toast(had ? 'Producto actualizado' : 'Producto guardado');
-  }
-  async function exportMine(){
-    const n = Object.keys(known).length;
-    if (!n) return toast('Aún no tienes productos propios');
-    const blob = new Blob([JSON.stringify(known, null, 1)], { type: 'application/json' });
-    try {
-      const file = new File([blob], 'mis-productos.json', { type: 'application/json' });
-      if (navigator.canShare && navigator.canShare({ files: [file] })){ await navigator.share({ files: [file], title: 'Mis productos' }); return; }
-    } catch (e){ if (e && e.name === 'AbortError') return; }
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mis-productos.json';
-    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    toast('Exportados ' + n + ' productos');
-  }
-  $('#mMine').onclick = () => { menu.close(); mine.classList.add('on'); renderMine(); };
-  const mine = $('#mine');
-  $('#mineClose').onclick = () => mine.classList.remove('on');
-  $('#pSave').onclick = saveMine;
-  $('#pName').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); saveMine(); } });
-  $('#pCode').addEventListener('input', e => { const c = e.target.value.replace(/\D/g, ''); if (known[c] && !$('#pName').value) $('#pName').value = known[c]; });
-  $('#pFilter').addEventListener('input', renderMine);
-  $('#pScan').onclick = () => {
-    captureCb = code => { $('#pCode').value = code; $('#pName').value = known[code] || ''; $('#pName').focus(); toast('Código leído: ' + code); };
-    openScanner();
-  };
-  $('#pExport').onclick = exportMine;
-  $('#pImport').onclick = () => $('#pFile').click();
-  $('#pFile').onchange = async e => {
-    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    try {
-      const j = JSON.parse(await f.text()), data = j && j.data && typeof j.data === 'object' ? j.data : j;
-      let n = 0;
-      for (const [c, name] of Object.entries(data)) if (validCode(String(c)) && typeof name === 'string' && name.trim()){ known[c] = name.trim(); n++; }
-      save(); renderMine(); toast(n + ' producto(s) importados');
+      if (j && j.app === 'lista-compra' && j.products && j.inventory){
+        if (!confirm('Esto sustituirá tu lista, tus productos y tus inventarios actuales por los de la copia. ¿Continuar?')) return;
+        items = Array.isArray(j.list) ? j.list : []; known = j.products; inv = j.inventory; fixInv();
+        saveList(); saveKnown(); saveInv(); toast('Copia restaurada');
+      } else if (j && typeof j === 'object' && !Array.isArray(j)){
+        // archivo simple {código: nombre} (p. ej. exportado antes): se suma a tus productos
+        let n = 0; for (const [c, name] of Object.entries(j)) if (/^\d{8,14}$/.test(c) && typeof name === 'string' && name.trim()){ known[c] = name.trim(); n++; }
+        if (!n) throw 0; saveKnown(); toast(n + ' producto(s) añadidos');
+      } else throw 0;
+      showTab(curTab());
     } catch { toast('Archivo no válido'); }
   };
 
-  /* ---------- PWA ---------- */
+  /* ---------- Arranque ---------- */
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
-  render();
+  let t0 = 'list'; try { t0 = localStorage.getItem(LS.tab) || 'list'; } catch {}
+  showTab(t0);
+  setTimeout(syncDb, 1500);
 })();
 </script>
 </body>
