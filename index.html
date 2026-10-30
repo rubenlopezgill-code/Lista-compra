@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b7f5c">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Lista de la compra</title>
+<style>
+  :root{
+    --bg:#f6f7f5; --card:#fff; --txt:#1c1f1d; --mut:#6b736e; --acc:#1b7f5c; --acc2:#14654a;
+    --line:#e3e6e2; --danger:#c0392b;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#101311; --card:#1a1e1b; --txt:#eceeec; --mut:#9aa39d; --acc:#2fa87d; --acc2:#3bbd8e; --line:#2a302c; --danger:#e5736a; }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  body{min-height:100dvh;padding-bottom:calc(env(safe-area-inset-bottom) + 24px)}
+  header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:calc(env(safe-area-inset-top) + 12px) 16px 12px;display:flex;align-items:center;gap:8px}
+  header h1{font-size:19px;margin:0;flex:1;font-weight:650}
+  header button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:9px 12px;font-size:15px;font-weight:600}
+  main{max-width:640px;margin:0 auto;padding:14px 14px 0}
+  .add{display:flex;gap:8px;margin-bottom:12px}
+  .add input{flex:1;min-width:0;font-size:17px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt)}
+  .btn{border:0;border-radius:12px;padding:0 16px;font-size:17px;font-weight:650;background:var(--acc);color:#fff;min-height:48px}
+  .btn.sec{background:var(--card);color:var(--txt);border:1px solid var(--line)}
+  .btn:active{background:var(--acc2)}
+  .bar{display:flex;gap:8px;margin-bottom:14px}
+  .bar .btn{flex:1}
+  .count{color:var(--mut);font-size:14px;margin:4px 2px 8px}
+  ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  li{background:var(--card);border:1px solid var(--line);border-radius:12px;display:flex;align-items:center;gap:10px;padding:6px 8px 6px 12px;min-height:54px}
+  li .chk{width:26px;height:26px;accent-color:var(--acc);flex:none}
+  li .body{flex:1;min-width:0;padding:6px 0}
+  li .name{font-size:17px;overflow-wrap:anywhere}
+  li .meta{font-size:12.5px;color:var(--mut);margin-top:2px}
+  li.done .name{text-decoration:line-through;color:var(--mut)}
+  .qty{display:flex;align-items:center;gap:2px;flex:none}
+  .qty button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:18px;line-height:1}
+  .qty span{min-width:22px;text-align:center;font-weight:650}
+  .del{width:38px;height:38px;border:0;background:transparent;color:var(--danger);font-size:20px;border-radius:9px;flex:none}
+  .empty{text-align:center;color:var(--mut);padding:40px 10px;line-height:1.5}
+  /* scanner */
+  #scanner{position:fixed;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
+  #scanner.on{display:flex}
+  #scanner video{flex:1;width:100%;object-fit:cover;min-height:0}
+  .frame{position:absolute;left:50%;top:38%;width:78%;max-width:340px;height:150px;transform:translate(-50%,-50%);border:3px solid #fff;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.45);pointer-events:none}
+  .frame::after{content:"";position:absolute;left:8px;right:8px;top:50%;height:2px;background:#ff4d4d;animation:s 1.6s ease-in-out infinite alternate}
+  @keyframes s{from{transform:translateY(-55px)}to{transform:translateY(55px)}}
+  .sc-bottom{background:#000;color:#fff;padding:14px 14px calc(env(safe-area-inset-bottom) + 14px);display:flex;flex-direction:column;gap:10px}
+  .sc-msg{font-size:15px;text-align:center;min-height:20px;color:#d7ddd9}
+  .sc-row{display:flex;gap:8px}
+  .sc-row input{flex:1;min-width:0;font-size:17px;padding:12px;border-radius:10px;border:0}
+  /* dialog / toast */
+  dialog{border:0;border-radius:16px;padding:18px;width:min(92vw,420px);background:var(--card);color:var(--txt)}
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  dialog h3{margin:0 0 10px}
+  dialog input{width:100%;font-size:17px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--txt);margin-bottom:12px}
+  dialog .row{display:flex;gap:8px;justify-content:flex-end}
+  dialog .row .btn{padding:0 18px}
+  /* sugerencias y catálogo */
+  #sugg{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+  #sugg:empty{display:none}
+  #sugg button{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:15px}
+  #catalog{position:fixed;inset:0;background:var(--bg);z-index:15;display:none;flex-direction:column}
+  #catalog.on{display:flex}
+  .cat-head{background:var(--acc);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 14px 12px;display:flex;flex-direction:column;gap:8px}
+  .cat-top{display:flex;align-items:center;gap:8px}
+  .cat-top h2{margin:0;font-size:18px;flex:1}
+  .cat-top button{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:10px;padding:8px 12px;font-size:15px;font-weight:600}
+  .cat-head input,.cat-head select{width:100%;font-size:16px;padding:11px 12px;border-radius:10px;border:0;background:#fff;color:#1c1f1d}
+  .cat-row{display:flex;gap:8px}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;scrollbar-width:none;flex:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chips button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:14.5px}
+  .chips button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+  .cat-list{flex:1;overflow-y:auto;padding:0 14px calc(env(safe-area-inset-bottom) + 20px)}
+  .cat-list h4{margin:14px 2px 6px;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+  .cat-list .pr{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:4px 6px 4px 12px;margin-bottom:6px;min-height:46px}
+  .cat-list .pr .n{flex:1;font-size:16px;overflow-wrap:anywhere;padding:6px 0}
+  .cat-list .pr .in{font-size:12.5px;color:var(--acc);font-weight:650}
+  .cat-list .pr button{width:42px;height:38px;border:0;border-radius:9px;background:var(--acc);color:#fff;font-size:20px;font-weight:650}
+  .cat-list .online{width:100%;margin:12px 0 4px}
+  .cat-list .note{color:var(--mut);font-size:13.5px;text-align:center;padding:8px 6px;line-height:1.45}
+  #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:11px 16px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:40;max-width:90vw;text-align:center}
+  #toast.on{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🛒 Lista de la compra</h1>
+  <button id="btnShare" aria-label="Compartir lista">Compartir</button>
+</header>
+
+<main>
+  <form class="add" id="addForm" autocomplete="off">
+    <input id="addInput" type="text" placeholder="Añadir producto…" enterkeyhint="done" aria-label="Producto">
+    <button class="btn" type="submit" aria-label="Añadir">＋</button>
+  </form>
+
+  <div id="sugg"></div>
+
+  <div class="bar">
+    <button class="btn" id="btnScan">📷 Escanear</button>
+    <button class="btn sec" id="btnCatalog">📚 Catálogo</button>
+    <button class="btn sec" id="btnMenu" aria-label="Más opciones" style="flex:0 0 56px">⋯</button>
+  </div>
+
+  <div class="count" id="count"></div>
+  <ul id="list"></ul>
+  <div class="empty" id="empty" hidden>La lista está vacía.<br>Escribe un producto o escanea un código de barras.</div>
+</main>
+
+<section id="catalog" aria-label="Catálogo de productos">
+  <div class="cat-head">
+    <div class="cat-top"><h2>📚 Catálogo</h2><button id="catClose" type="button">Listo</button></div>
+    <input id="catSearch" type="search" placeholder="Buscar producto (ej. leche, yogur, pan)…" autocomplete="off">
+    <select id="catStore" aria-label="Supermercado">
+      <option value="">Supermercado: cualquiera</option>
+      <option>Dia</option><option>Alteza</option><option>El Árbol</option><option>Mercadona</option>
+      <option>Carrefour</option><option>Lidl</option><option>Aldi</option><option>Eroski</option><option>Alcampo</option>
+    </select>
+  </div>
+  <div class="chips" id="catChips"></div>
+  <div class="cat-list" id="catList"></div>
+</section>
+
+<section id="scanner" aria-label="Escáner">
+  <video id="video" playsinline muted></video>
+  <div class="frame"></div>
+  <div class="sc-bottom">
+    <div class="sc-msg" id="scMsg">Apunta al código de barras</div>
+    <form class="sc-row" id="manualForm">
+      <input id="manualCode" inputmode="numeric" placeholder="O escribe el código a mano" aria-label="Código manual">
+      <button class="btn" type="submit">OK</button>
+    </form>
+    <button class="btn sec" id="btnCloseScan" type="button">Cerrar escáner</button>
+  </div>
+</section>
+
+<dialog id="dlgName">
+  <h3 id="dlgTitle">Producto nuevo</h3>
+  <p id="dlgText" style="margin:0 0 10px;color:var(--mut);font-size:14px"></p>
+  <input id="dlgInput" type="text" placeholder="Nombre del producto">
+  <div class="row">
+    <button class="btn sec" id="dlgCancel" type="button">Cancelar</button>
+    <button class="btn" id="dlgOk" type="button">Añadir</button>
+  </div>
+</dialog>
+
+<dialog id="dlgMenu">
+  <h3>Opciones</h3>
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <button class="btn sec" id="mClearDone">Quitar los marcados</button>
+    <button class="btn sec" id="mUncheck">Desmarcar todos</button>
+    <button class="btn sec" id="mCopy">Copiar lista como texto</button>
+    <button class="btn sec" id="mWhats">Enviar por WhatsApp</button>
+    <button class="btn sec" id="mImport">Importar lista pegada…</button>
+    <button class="btn sec" id="mClearAll" style="color:var(--danger)">Vaciar toda la lista</button>
+    <button class="btn" id="mClose">Cerrar</button>
+  </div>
+</dialog>
+
+<div id="toast"></div>
+
+<script src="zxing.min.js"></script>
+<script src="catalog.js"></script>
+<script>
+(() => {
+  'use strict';
+  const KEY = 'lista-compra-v1';
+  const CACHE_KEY = 'lista-compra-barcodes-v1'; // código -> nombre recordado
+  const $ = s => document.querySelector(s);
+
+  /* ---------- Estado + almacenamiento local ---------- */
+  let items = load(KEY, []);
+  let known = load(CACHE_KEY, {});
+  function load(k, d){ try { const v = JSON.parse(localStorage.getItem(k)); return v ?? d; } catch { return d; } }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(items)); localStorage.setItem(CACHE_KEY, JSON.stringify(known)); } catch {} }
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  /* ---------- Lógica de lista ---------- */
+  function addItem(name, code, store){
+    name = (name || '').trim().replace(/\s+/g, ' ');
+    if (!name) return null;
+    // Si ya existe (mismo código o mismo nombre), suma cantidad en vez de duplicar.
+    const lower = name.toLowerCase();
+    let ex = items.find(i => (code && i.code === code) || i.name.toLowerCase() === lower);
+    if (ex){ ex.qty += 1; ex.done = false; if (store && !ex.store) ex.store = store; save(); render(); return ex; }
+    ex = { id: uid(), name, qty: 1, done: false, code: code || '', store: store || '' };
+    items.unshift(ex);
+    save(); render();
+    return ex;
+  }
+  function fmtList(){
+    const pend = items.filter(i => !i.done), done = items.filter(i => i.done);
+    const line = i => `${i.qty > 1 ? i.qty + ' x ' : ''}${i.name}${i.store ? ' (' + i.store + ')' : ''}`;
+    let t = '🛒 Lista de la compra\n';
+    pend.forEach(i => t += `☐ ${line(i)}\n`);
+    done.forEach(i => t += `☑ ${line(i)}\n`);
+    return t.trim();
+  }
+
+  /* ---------- Render ---------- */
+  function render(){
+    const ul = $('#list'); ul.textContent = '';
+    const sorted = [...items.filter(i => !i.done), ...items.filter(i => i.done)];
+    for (const it of sorted){
+      const li = document.createElement('li'); if (it.done) li.className = 'done';
+      const chk = document.createElement('input'); chk.type = 'checkbox'; chk.className = 'chk'; chk.checked = it.done;
+      chk.setAttribute('aria-label', 'Marcar ' + it.name);
+      chk.onchange = () => { it.done = chk.checked; save(); render(); };
+      const body = document.createElement('div'); body.className = 'body';
+      const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = it.name;
+      body.append(nm);
+      const meta = [it.store, it.code].filter(Boolean).join(' · ');
+      if (meta){ const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta; body.append(m); }
+      body.onclick = () => rename(it);
+      const q = document.createElement('div'); q.className = 'qty';
+      const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label','Menos');
+      const num = document.createElement('span'); num.textContent = it.qty;
+      const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label','Más');
+      minus.onclick = () => { if (it.qty > 1){ it.qty--; save(); render(); } };
+      plus.onclick = () => { it.qty++; save(); render(); };
+      q.append(minus, num, plus);
+      const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.setAttribute('aria-label','Borrar ' + it.name);
+      del.onclick = () => { items = items.filter(x => x.id !== it.id); save(); render(); };
+      li.append(chk, body, q, del);
+      ul.append(li);
+    }
+    const pending = items.filter(i => !i.done).length;
+    $('#empty').hidden = items.length > 0;
+    $('#count').textContent = items.length ? `${pending} pendiente${pending === 1 ? '' : 's'} · ${items.length - pending} en el carro` : '';
+  }
+
+  /* ---------- Utilidades UI ---------- */
+  let toastT;
+  function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400); }
+
+  function askName({title, text, value = '', ok = 'Añadir'}){
+    return new Promise(res => {
+      const d = $('#dlgName'); $('#dlgTitle').textContent = title; $('#dlgText').textContent = text || '';
+      const inp = $('#dlgInput'); inp.value = value; $('#dlgOk').textContent = ok;
+      const done = v => { d.close(); res(v); };
+      $('#dlgOk').onclick = () => done(inp.value.trim());
+      $('#dlgCancel').onclick = () => done(null);
+      d.oncancel = () => res(null);
+      inp.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); done(inp.value.trim()); } };
+      d.showModal(); setTimeout(() => { inp.focus(); inp.select(); }, 50);
+    });
+  }
+  async function rename(it){
+    const v = await askName({ title: 'Editar producto', value: it.name, ok: 'Guardar' });
+    if (v){ it.name = v; if (it.code) known[it.code] = v; save(); render(); }
+  }
+
+  /* ---------- Formulario manual ---------- */
+  $('#addForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const inp = $('#addInput'); if (addItem(inp.value)) inp.value = '';
+    inp.focus();
+  });
+
+  /* ---------- Compartir ---------- */
+  async function shareList(){
+    if (!items.length){ toast('La lista está vacía'); return; }
+    const text = fmtList();
+    if (navigator.share){
+      try { await navigator.share({ title: 'Lista de la compra', text }); return; }
+      catch (e){ if (e && e.name === 'AbortError') return; }
+    }
+    copyText(text);
+  }
+  async function copyText(text){
+    try { await navigator.clipboard.writeText(text); toast('Lista copiada'); }
+    catch {
+      const ta = document.createElement('textarea'); ta.value = text; document.body.append(ta); ta.select();
+      try { document.execCommand('copy'); toast('Lista copiada'); } catch { toast('No se pudo copiar'); }
+      ta.remove();
+    }
+  }
+  $('#btnShare').onclick = shareList;
+
+  /* ---------- Menú ---------- */
+  const menu = $('#dlgMenu');
+  $('#btnMenu').onclick = () => menu.showModal();
+  $('#mClose').onclick = () => menu.close();
+  $('#mClearDone').onclick = () => { items = items.filter(i => !i.done); save(); render(); menu.close(); };
+  $('#mUncheck').onclick = () => { items.forEach(i => i.done = false); save(); render(); menu.close(); };
+  $('#mCopy').onclick = () => { menu.close(); if (items.length) copyText(fmtList()); else toast('La lista está vacía'); };
+  $('#mWhats').onclick = () => { menu.close(); if (!items.length) return toast('La lista está vacía'); window.open('https://wa.me/?text=' + encodeURIComponent(fmtList()), '_blank'); };
+  $('#mClearAll').onclick = () => { menu.close(); if (items.length && confirm('¿Vaciar toda la lista?')){ items = []; save(); render(); } };
+  $('#mImport').onclick = async () => {
+    menu.close();
+    const t = prompt('Pega aquí una lista (un producto por línea):');
+    if (!t) return;
+    let n = 0;
+    t.split(/\r?\n/).forEach(l => {
+      l = l.replace(/^[\s☐☑✔✓•\-\*]+/, '').replace(/^(\d+)\s*x\s+/i, '').trim();
+      if (l && !/^🛒/.test(l)){ addItem(l); n++; }
+    });
+    toast(n + ' producto(s) importados');
+  };
+
+  /* ---------- Escáner ---------- */
+  let stream = null, scanning = false, detector = null, zxingReader = null, lastCode = '', lastAt = 0;
+
+  async function openScanner(){
+    $('#scanner').classList.add('on'); $('#scMsg').textContent = 'Iniciando cámara…';
+    if (!window.isSecureContext){
+      $('#scMsg').textContent = 'La cámara solo funciona con https://. Abre la app desde su dirección https. Mientras, escribe el código a mano.'; return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      $('#scMsg').textContent = 'La cámara no está disponible aquí. Escribe el código a mano.'; return;
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    } catch (e){
+      $('#scMsg').textContent = (e && e.name === 'NotAllowedError')
+        ? 'Permiso de cámara denegado. Actívalo en Ajustes → Apps → Lista de la compra → Permisos → Cámara. Mientras, escribe el código a mano.'
+        : 'No se pudo abrir la cámara (' + (e && e.name || 'error') + '). Escribe el código a mano.';
+      return;
+    }
+    const v = $('#video'); v.srcObject = stream; await v.play().catch(() => {});
+    $('#scMsg').textContent = 'Apunta al código de barras';
+    scanning = true;
+
+    if ('BarcodeDetector' in window){
+      try {
+        detector = new BarcodeDetector({ formats: ['ean_13','ean_8','upc_a','upc_e','code_128','code_39','itf','qr_code'] });
+        loopNative(v); return;
+      } catch {}
+    }
+    loopZXing(v);
+  }
+  async function loopNative(v){
+    while (scanning){
+      try {
+        const r = await detector.detect(v);
+        if (r.length) await onCode(r[0].rawValue);
+      } catch {}
+      await new Promise(r => setTimeout(r, 150));
+    }
+  }
+  function loopZXing(v){
+    if (!window.ZXing){ $('#scMsg').textContent = 'Escáner no disponible. Escribe el código a mano.'; return; }
+    const hints = new Map();
+    hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [ZXing.BarcodeFormat.EAN_13, ZXing.BarcodeFormat.EAN_8, ZXing.BarcodeFormat.UPC_A, ZXing.BarcodeFormat.UPC_E, ZXing.BarcodeFormat.CODE_128, ZXing.BarcodeFormat.CODE_39, ZXing.BarcodeFormat.ITF]);
+    hints.set(ZXing.DecodeHintType.TRY_HARDER, true);
+    zxingReader = new ZXing.MultiFormatReader(); zxingReader.setHints(hints);
+    const cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+    (async function tick(){
+      while (scanning){
+        if (v.videoWidth){
+          cv.width = v.videoWidth; cv.height = v.videoHeight;
+          ctx.drawImage(v, 0, 0);
+          try {
+            const lum = new ZXing.RGBLuminanceSource(toLum(ctx.getImageData(0, 0, cv.width, cv.height)), cv.width, cv.height);
+            const bmp = new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(lum));
+            const r = zxingReader.decode(bmp);
+            if (r) await onCode(r.getText());
+          } catch {}
+        }
+        await new Promise(r => setTimeout(r, 200));
+      }
+    })();
+  }
+  function toLum(img){
+    const d = img.data, out = new Uint8ClampedArray(img.width * img.height);
+    for (let i = 0, j = 0; i < d.length; i += 4, j++) out[j] = (d[i] * 306 + d[i+1] * 601 + d[i+2] * 117) >> 10;
+    return out;
+  }
+  function closeScanner(){
+    scanning = false;
+    if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
+    $('#video').srcObject = null; $('#scanner').classList.remove('on'); $('#manualCode').value = '';
+  }
+
+  async function onCode(code){
+    code = String(code || '').trim();
+    const now = Date.now();
+    if (!code || (code === lastCode && now - lastAt < 3000)) return;
+    lastCode = code; lastAt = now;
+    scanning = false;                       // pausa mientras gestionamos el código
+    if (navigator.vibrate) navigator.vibrate(60);
+    $('#scMsg').textContent = 'Código ' + code + ' — buscando…';
+
+    let name = known[code];
+    if (!name){ name = await lookup(code); }
+    if (!name){
+      name = await askName({ title: 'Producto no encontrado', text: 'Código ' + code + '. Ponle un nombre y lo recordaré la próxima vez.' });
+    }
+    if (name){
+      known[code] = name;
+      addItem(name, code);
+      toast('Añadido: ' + name);
+    }
+    // Reanudar escaneo
+    if ($('#scanner').classList.contains('on')){
+      scanning = true; $('#scMsg').textContent = 'Apunta al código de barras';
+      if (detector) loopNative($('#video')); else loopZXing($('#video'));
+    }
+  }
+
+  async function lookup(code){
+    if (!navigator.onLine) return null;
+    try {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 6000);
+      const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,product_name_es,brands,quantity`, { signal: ctl.signal });
+      clearTimeout(t);
+      const j = await r.json();
+      if (j && j.status === 1 && j.product){
+        const p = j.product, n = (p.product_name_es || p.product_name || '').trim();
+        if (n){ const b = (p.brands || '').split(',')[0].trim(); return b && !n.toLowerCase().includes(b.toLowerCase()) ? `${n} (${b})` : n; }
+      }
+    } catch {}
+    return null;
+  }
+
+  $('#btnScan').onclick = openScanner;
+  $('#btnCloseScan').onclick = closeScanner;
+  $('#manualForm').addEventListener('submit', e => { e.preventDefault(); const c = $('#manualCode').value.trim(); if (c){ $('#manualCode').value = ''; onCode(c); } });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && stream) closeScanner(); });
+
+
+  /* ---------- Catálogo, autocompletado y búsqueda online ---------- */
+  const CAT = window.CATALOG || {};
+  const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const ALL = []; for (const c in CAT) for (const n of CAT[c]) ALL.push({ n, c, k: norm(n) });
+  const STORE_TAGS = { 'Dia':'dia', 'Alteza':'alteza', 'El Árbol':'el-arbol', 'Mercadona':'mercadona', 'Carrefour':'carrefour', 'Lidl':'lidl', 'Aldi':'aldi', 'Eroski':'eroski', 'Alcampo':'alcampo' };
+
+  function matches(q, limit){
+    const k = norm(q.trim()); if (!k) return [];
+    const starts = [], inside = [], seen = new Set();
+    const pool = ALL.concat(Object.values(known).map(n => ({ n, c: '', k: norm(n) })));
+    for (const e of pool){
+      if (seen.has(e.k)) continue;
+      const i = e.k.indexOf(k);
+      if (i === 0){ starts.push(e); seen.add(e.k); } else if (i > 0){ inside.push(e); seen.add(e.k); }
+    }
+    return starts.concat(inside).slice(0, limit || 50);
+  }
+
+  // Sugerencias mientras escribes en el campo principal
+  const sugg = $('#sugg');
+  $('#addInput').addEventListener('input', e => {
+    sugg.textContent = '';
+    const v = e.target.value;
+    if (v.trim().length < 2) return;
+    for (const m of matches(v, 6)){
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = m.n;
+      b.onclick = () => { addItem(m.n); e.target.value = ''; sugg.textContent = ''; e.target.focus(); };
+      sugg.append(b);
+    }
+  });
+  $('#addForm').addEventListener('submit', () => { sugg.textContent = ''; });
+
+  // Pantalla de catálogo
+  let catSel = 'Todas', catQ = '', onlineRes = null, onlineMsg = '';
+  const cat = $('#catalog');
+  function qtyInList(name){ const i = items.find(x => x.name.toLowerCase() === name.toLowerCase() && !x.done); return i ? i.qty : 0; }
+  function renderChips(){
+    const box = $('#catChips'); box.textContent = '';
+    for (const c of ['Todas', ...Object.keys(CAT)]){
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = c; if (c === catSel) b.className = 'on';
+      b.onclick = () => { catSel = c; renderChips(); renderCatalog(); $('#catList').scrollTop = 0; };
+      box.append(b);
+    }
+  }
+  function prRow(name, store, code){
+    const d = document.createElement('div'); d.className = 'pr';
+    const n = document.createElement('div'); n.className = 'n'; n.textContent = name;
+    const inl = document.createElement('span'); inl.className = 'in';
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = '+'; b.setAttribute('aria-label', 'Añadir ' + name);
+    const upd = () => { const q = qtyInList(name); inl.textContent = q ? '×' + q : ''; };
+    b.onclick = () => { addItem(name, code, store || ''); upd(); if (navigator.vibrate) navigator.vibrate(20); };
+    upd(); d.append(n, inl, b); return d;
+  }
+  function renderCatalog(){
+    const box = $('#catList'); box.textContent = '';
+    const store = $('#catStore').value;
+    const k = norm(catQ.trim());
+    let shown = 0;
+    for (const c of Object.keys(CAT)){
+      if (catSel !== 'Todas' && catSel !== c) continue;
+      const list = CAT[c].filter(n => !k || norm(n).includes(k));
+      if (!list.length) continue;
+      const h4 = document.createElement('h4'); h4.textContent = c; box.append(h4);
+      list.forEach(n => { box.append(prRow(n, store)); shown++; });
+    }
+    if (!shown){ const d = document.createElement('div'); d.className = 'note'; d.textContent = 'No hay coincidencias en el catálogo.'; box.append(d); }
+    if (k.length >= 2){
+      const ob = document.createElement('button'); ob.type = 'button'; ob.className = 'btn online';
+      ob.textContent = '🌐 Buscar «' + catQ.trim() + '» con marcas' + (store ? ' (' + store + ')' : '') + ' online';
+      ob.onclick = () => runOnline(); box.append(ob);
+    }
+    if (onlineMsg){ const d = document.createElement('div'); d.className = 'note'; d.textContent = onlineMsg; box.append(d); }
+    if (onlineRes && onlineRes.length){
+      const h4 = document.createElement('h4'); h4.textContent = 'Resultados online (Open Food Facts)'; box.append(h4);
+      onlineRes.forEach(r => box.append(prRow(r.name, store, r.code)));
+    }
+  }
+  async function runOnline(){
+    const q = catQ.trim(), store = $('#catStore').value;
+    if (q.length < 2) return;
+    if (!navigator.onLine){ onlineMsg = 'Sin conexión: la búsqueda online necesita internet.'; onlineRes = null; renderCatalog(); return; }
+    onlineMsg = 'Buscando…'; onlineRes = null; renderCatalog();
+    const build = withStore => {
+      const p = new URLSearchParams({ search_terms: q, search_simple: '1', action: 'process', json: '1', page_size: '30', fields: 'code,product_name,product_name_es,brands,quantity' });
+      p.set('tagtype_0', 'countries'); p.set('tag_contains_0', 'contains'); p.set('tag_0', 'spain');
+      if (withStore && store){ p.set('tagtype_1', 'stores'); p.set('tag_contains_1', 'contains'); p.set('tag_1', STORE_TAGS[store] || norm(store).replace(/\s+/g, '-')); }
+      return 'https://world.openfoodfacts.org/cgi/search.pl?' + p;
+    };
+    const get = async url => {
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 9000);
+      try { const r = await fetch(url, { signal: ctl.signal }); return (await r.json()).products || []; }
+      finally { clearTimeout(t); }
+    };
+    try {
+      let prods = await get(build(true)), fallback = false;
+      if (!prods.length && store){ prods = await get(build(false)); fallback = true; }
+      const seen = new Set(), out = [];
+      for (const p of prods){
+        const n = (p.product_name_es || p.product_name || '').trim(); if (!n) continue;
+        const b = (p.brands || '').split(',')[0].trim();
+        let name = b && !norm(n).includes(norm(b)) ? `${n} (${b})` : n;
+        if (p.quantity) name += ' ' + String(p.quantity).trim();
+        const key = norm(name); if (seen.has(key)) continue; seen.add(key);
+        out.push({ name, code: p.code || '' });
+      }
+      onlineRes = out;
+      onlineMsg = !out.length ? 'Sin resultados online. Prueba con otra palabra.'
+        : fallback ? 'No hay resultados etiquetados de ' + store + '. Te muestro productos de España.' : '';
+    } catch { onlineRes = null; onlineMsg = 'No se pudo buscar online. Comprueba tu conexión.'; }
+    renderCatalog();
+  }
+  function openCatalog(){ cat.classList.add('on'); renderChips(); renderCatalog(); }
+  function closeCatalog(){ cat.classList.remove('on'); }
+  $('#btnCatalog').onclick = openCatalog;
+  $('#catClose').onclick = closeCatalog;
+  $('#catSearch').addEventListener('input', e => { catQ = e.target.value; onlineRes = null; onlineMsg = ''; renderCatalog(); });
+  $('#catStore').addEventListener('change', () => { onlineRes = null; onlineMsg = ''; renderCatalog(); try { localStorage.setItem('lista-compra-store', $('#catStore').value); } catch {} });
+  try { const s = localStorage.getItem('lista-compra-store'); if (s) $('#catStore').value = s; } catch {}
+  window.addEventListener('popstate', closeCatalog);
+
+  /* ---------- PWA ---------- */
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+  render();
+})();
+</script>
+</body>
+</html>

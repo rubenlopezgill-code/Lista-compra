@@ -1,0 +1,10 @@
+/*
+  Permissions-Policy: camera=(self)
+  X-Content-Type-Options: nosniff
+
+/manifest.json
+  Content-Type: application/manifest+json
+  Access-Control-Allow-Origin: *
+
+/sw.js
+  Cache-Control: no-cache
