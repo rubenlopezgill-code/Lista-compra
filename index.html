@@ -65,8 +65,10 @@
   #sugg{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
   #sugg:empty{display:none}
   #sugg button{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:999px;padding:7px 13px;font-size:15px}
-  #catalog{position:fixed;inset:0;background:var(--bg);z-index:15;display:none;flex-direction:column}
-  #catalog.on{display:flex}
+  #catalog,#mine{position:fixed;inset:0;background:var(--bg);z-index:15;display:none;flex-direction:column}
+  #catalog.on,#mine.on{display:flex}
+  .cat-list .pr .sub{font-size:12.5px;color:var(--mut)}
+  .cat-list .pr button.red{background:var(--danger);width:38px}
   .cat-head{background:var(--acc);color:#fff;padding:calc(env(safe-area-inset-top) + 10px) 14px 12px;display:flex;flex-direction:column;gap:8px}
   .cat-top{display:flex;align-items:center;gap:8px}
   .cat-top h2{margin:0;font-size:18px;flex:1}
@@ -128,6 +130,24 @@
   <div class="cat-list" id="catList"></div>
 </section>
 
+<section id="mine" aria-label="Mis productos">
+  <div class="cat-head">
+    <div class="cat-top"><h2>🗂️ Mis productos</h2><button id="mineClose" type="button">Listo</button></div>
+    <div class="cat-row">
+      <input id="pCode" inputmode="numeric" placeholder="Código de barras" autocomplete="off" style="flex:1;min-width:0">
+      <button class="btn" id="pScan" type="button" aria-label="Escanear código" style="min-height:0;padding:0 16px;background:rgba(255,255,255,.22)">📷</button>
+    </div>
+    <input id="pName" type="text" placeholder="Nombre del producto" autocomplete="off">
+    <button class="btn" id="pSave" type="button" style="background:#fff;color:#14654a">Guardar en mi base</button>
+  </div>
+  <div class="chips">
+    <button id="pExport" type="button">⬇ Exportar copia</button>
+    <button id="pImport" type="button">⬆ Importar</button>
+  </div>
+  <div style="padding:0 14px 6px"><input id="pFilter" type="search" placeholder="Buscar en mis productos…" autocomplete="off" style="width:100%;font-size:16px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--txt)"></div>
+  <div class="cat-list" id="pList"></div>
+</section>
+
 <section id="scanner" aria-label="Escáner">
   <video id="video" playsinline muted></video>
   <div class="frame"></div>
@@ -159,6 +179,7 @@
     <button class="btn sec" id="mUncheck">Desmarcar todos</button>
     <button class="btn sec" id="mCopy">Copiar lista como texto</button>
     <button class="btn sec" id="mWhats">Enviar por WhatsApp</button>
+    <button class="btn sec" id="mMine">🗂️ Mis productos</button>
     <button class="btn sec" id="mDb">📦 Base de productos…</button>
     <button class="btn sec" id="mImport">Importar lista pegada…</button>
     <button class="btn sec" id="mClearAll" style="color:var(--danger)">Vaciar toda la lista</button>
@@ -166,6 +187,7 @@
   </div>
 </dialog>
 
+<input type="file" id="pFile" accept=".json,application/json" hidden>
 <input type="file" id="dbFile" accept=".json,application/json" hidden>
 <div id="toast"></div>
 
@@ -310,7 +332,7 @@
   };
 
   /* ---------- Escáner ---------- */
-  let stream = null, scanning = false, detector = null, zxingReader = null, lastCode = '', lastAt = 0;
+  let stream = null, scanning = false, detector = null, zxingReader = null, lastCode = '', lastAt = 0, captureCb = null;
 
   async function openScanner(){
     $('#scanner').classList.add('on'); $('#scMsg').textContent = 'Iniciando cámara…';
@@ -378,7 +400,7 @@
     return out;
   }
   function closeScanner(){
-    scanning = false;
+    scanning = false; captureCb = null;
     if (stream){ stream.getTracks().forEach(t => t.stop()); stream = null; }
     $('#video').srcObject = null; $('#scanner').classList.remove('on'); $('#manualCode').value = '';
   }
@@ -388,6 +410,7 @@
     const now = Date.now();
     if (!code || (code === lastCode && now - lastAt < 3000)) return;
     lastCode = code; lastAt = now;
+    if (captureCb){ const cb = captureCb; captureCb = null; closeScanner(); cb(code); return; }
     scanning = false;                       // pausa mientras gestionamos el código
     if (navigator.vibrate) navigator.vibrate(60);
     $('#scMsg').textContent = 'Código ' + code + ' — buscando…';
@@ -651,6 +674,77 @@
     } catch { toast('Archivo no válido'); }
   };
   setTimeout(syncDb, 1500);
+
+  /* ---------- Mis productos (base propia) ---------- */
+  const validCode = c => /^\d{8,14}$/.test(c);
+  function renderMine(){
+    const box = $('#pList'); box.textContent = '';
+    const k = norm($('#pFilter').value.trim());
+    const all = Object.entries(known);
+    const rows = all.filter(([c, n]) => !k || norm(n).includes(k) || c.includes(k)).sort((a, b) => a[1].localeCompare(b[1], 'es'));
+    if (!rows.length){
+      const d = document.createElement('div'); d.className = 'note';
+      d.textContent = all.length ? 'Sin coincidencias.' : 'Aún no tienes productos propios. Escanea o escribe un código arriba y ponle nombre.';
+      box.append(d); return;
+    }
+    const h4 = document.createElement('h4'); h4.textContent = rows.length + ' producto' + (rows.length === 1 ? '' : 's'); box.append(h4);
+    for (const [code, name] of rows){
+      const d = document.createElement('div'); d.className = 'pr';
+      const n = document.createElement('div'); n.className = 'n';
+      n.append(document.createTextNode(name));
+      const sub = document.createElement('div'); sub.className = 'sub'; sub.textContent = code; n.append(sub);
+      n.onclick = async () => {
+        const v = await askName({ title: 'Editar producto', text: 'Código ' + code, value: known[code], ok: 'Guardar' });
+        if (v){ known[code] = v; save(); renderMine(); }
+      };
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'red'; del.textContent = '✕'; del.setAttribute('aria-label', 'Borrar ' + name);
+      del.onclick = () => { if (confirm('¿Borrar «' + name + '» de tu base?')){ delete known[code]; save(); renderMine(); } };
+      d.append(n, del); box.append(d);
+    }
+  }
+  function saveMine(){
+    const code = $('#pCode').value.replace(/\D/g, '');
+    const name = $('#pName').value.trim().replace(/\s+/g, ' ');
+    if (!validCode(code)) return toast('El código debe tener entre 8 y 14 cifras');
+    if (!name) return toast('Escribe el nombre del producto');
+    const had = known[code]; known[code] = name; save();
+    $('#pCode').value = ''; $('#pName').value = '';
+    renderMine(); toast(had ? 'Producto actualizado' : 'Producto guardado');
+  }
+  async function exportMine(){
+    const n = Object.keys(known).length;
+    if (!n) return toast('Aún no tienes productos propios');
+    const blob = new Blob([JSON.stringify(known, null, 1)], { type: 'application/json' });
+    try {
+      const file = new File([blob], 'mis-productos.json', { type: 'application/json' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })){ await navigator.share({ files: [file], title: 'Mis productos' }); return; }
+    } catch (e){ if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mis-productos.json';
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('Exportados ' + n + ' productos');
+  }
+  $('#mMine').onclick = () => { menu.close(); mine.classList.add('on'); renderMine(); };
+  const mine = $('#mine');
+  $('#mineClose').onclick = () => mine.classList.remove('on');
+  $('#pSave').onclick = saveMine;
+  $('#pName').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); saveMine(); } });
+  $('#pCode').addEventListener('input', e => { const c = e.target.value.replace(/\D/g, ''); if (known[c] && !$('#pName').value) $('#pName').value = known[c]; });
+  $('#pFilter').addEventListener('input', renderMine);
+  $('#pScan').onclick = () => {
+    captureCb = code => { $('#pCode').value = code; $('#pName').value = known[code] || ''; $('#pName').focus(); toast('Código leído: ' + code); };
+    openScanner();
+  };
+  $('#pExport').onclick = exportMine;
+  $('#pImport').onclick = () => $('#pFile').click();
+  $('#pFile').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    try {
+      const j = JSON.parse(await f.text()), data = j && j.data && typeof j.data === 'object' ? j.data : j;
+      let n = 0;
+      for (const [c, name] of Object.entries(data)) if (validCode(String(c)) && typeof name === 'string' && name.trim()){ known[c] = name.trim(); n++; }
+      save(); renderMine(); toast(n + ' producto(s) importados');
+    } catch { toast('Archivo no válido'); }
+  };
 
   /* ---------- PWA ---------- */
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')){
