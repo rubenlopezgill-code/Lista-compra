@@ -1,4 +1,4 @@
-const CACHE = 'lista-compra-v8';
+const CACHE = 'lista-compra-v11';
 const ASSETS = ['./', './index.html', './zxing.min.js', './catalog.js', './manifest.json',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
 

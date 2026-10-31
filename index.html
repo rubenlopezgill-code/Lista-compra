@@ -45,7 +45,8 @@
   li .meta{font-size:12.5px;color:var(--mut);margin-top:2px}
   li.done .name{text-decoration:line-through;color:var(--mut)}
   li.zero .name{color:var(--mut)}
-  li.zero .meta{color:var(--danger)}
+  li.zero .meta,li .meta.low{color:var(--danger)}
+  .badge{flex:none;font-weight:700;font-size:17px;padding:0 14px 0 6px}
   .qty{display:flex;align-items:center;gap:2px;flex:none}
   .qty button{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:var(--bg);color:var(--txt);font-size:19px;line-height:1}
   .qty span{min-width:26px;text-align:center;font-weight:650}
@@ -80,13 +81,22 @@
   .sc-row{display:flex;gap:8px}
   .sc-row input{flex:1;min-width:0;font-size:17px;padding:12px;border-radius:10px;border:0}
   /* diálogos y aviso */
-  dialog{border:0;border-radius:16px;padding:18px;width:min(92vw,420px);background:var(--card);color:var(--txt)}
+  dialog{border:0;border-radius:16px;padding:18px;width:min(92vw,420px);max-height:90dvh;overflow:auto;background:var(--card);color:var(--txt)}
   dialog::backdrop{background:rgba(0,0,0,.5)}
   dialog h3{margin:0 0 8px;overflow-wrap:anywhere}
   dialog input[type=text]{width:100%;margin-bottom:12px;background:var(--bg)}
   dialog .col{display:flex;flex-direction:column;gap:8px}
   dialog .row{display:flex;gap:8px;justify-content:flex-end}
   dialog .row .btn{padding:0 18px}
+  .rowtools{display:flex;gap:8px;margin-bottom:10px}
+  .rowtools .btn{flex:1;min-height:44px;font-size:15px;padding:0 8px}
+  .sug{max-height:34vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+  .sug button{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:11px 12px;font-size:15.5px;color:var(--txt)}
+  .sug button:last-child{border-bottom:0}
+  .sug button small{display:block;color:var(--mut);font-size:12.5px;margin-top:2px}
+  .sug .msg{padding:12px;color:var(--mut);font-size:14px;line-height:1.4}
+  .sug .hd{padding:10px 12px 4px;font-size:12.5px;font-weight:650;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+  .sug .back{color:var(--acc);font-weight:650}
   #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%) translateY(20px);background:#222;color:#fff;padding:11px 16px;border-radius:12px;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:40;max-width:90vw;text-align:center}
   #toast.top{bottom:auto;top:calc(env(safe-area-inset-top) + 64px)}
   #toast.on{opacity:1;transform:translateX(-50%)}
@@ -109,7 +119,7 @@
     <button class="btn" id="btnScanList">📷 Escanear</button>
     <button class="btn sec" id="btnShare">Compartir</button>
   </div>
-  <div class="count"><span id="count"></span><button class="link" id="btnClearDone" hidden>Quitar marcados</button></div>
+  <div class="count"><span id="count"></span><button class="link" id="btnClearDone" hidden>Terminar compra</button></div>
   <ul id="list"></ul>
   <div class="empty" id="empty" hidden>La lista está vacía.<br>Escribe un producto o escanea un código de barras.</div>
 </main>
@@ -173,6 +183,12 @@
   <h3 id="dlgTitle"></h3>
   <p id="dlgText" style="margin:0 0 10px;color:var(--mut);font-size:14px"></p>
   <input id="dlgInput" type="text" autocomplete="off">
+  <div class="rowtools" id="dlgTools" hidden>
+    <button class="btn sec" id="dlgFind" type="button">🔍 Buscar</button>
+    <button class="btn sec" id="dlgType" type="button">🏷️ Tipo</button>
+    <button class="btn sec" id="dlgPaste" type="button">📋 Pegar</button>
+  </div>
+  <div class="sug" id="dlgSug" hidden></div>
   <button class="btn sec" id="dlgWeb" type="button" style="width:100%;margin-bottom:10px" hidden>🔎 Buscar este código en Google</button>
   <button class="btn danger" id="dlgDel" type="button" style="width:100%;margin-bottom:10px" hidden></button>
   <div class="row">
@@ -229,7 +245,7 @@
   fixInv();
   const saveList = () => put(LS.list, items);
   const saveKnown = () => put(LS.known, known);
-  const saveInv = () => put(LS.inv, inv);
+  const saveInv = () => { put(LS.inv, inv); syncAuto(); };
   const curHome = () => inv.homes.find(h => h.id === inv.cur);
   const curItems = () => inv.items[inv.cur];
 
@@ -241,19 +257,59 @@
     t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2400);
   }
   const DEL = {};
-  function askName({ title, text = '', value = '', ok = 'Guardar', web = '', del = '' }){
+  function askName({ title, text = '', value = '', ok = 'Guardar', web = '', del = '', suggest = false, numeric = false }){
     return new Promise(res => {
       const d = $('#dlgName'); $('#dlgTitle').textContent = title; $('#dlgText').textContent = text;
-      const inp = $('#dlgInput'); inp.value = value; $('#dlgOk').textContent = ok;
+      const inp = $('#dlgInput'); inp.value = value; inp.inputMode = numeric ? 'numeric' : 'text'; $('#dlgOk').textContent = ok;
       const wb = $('#dlgWeb'); wb.hidden = !web; wb.onclick = () => window.open(web, '_blank');
       const db = $('#dlgDel'); db.hidden = !del; db.textContent = del;
-      const done = v => { if (d.open) d.close(); res(v); };
+      const tools = $('#dlgTools'), sug = $('#dlgSug'); tools.hidden = !suggest; sug.hidden = true; sug.textContent = '';
+      let token = 0, timer = null, typed = false;   // typed: ya elegiste un tipo; escribir la marca no relanza la búsqueda
+      const showMsg = t => { sug.hidden = false; sug.textContent = ''; const m = document.createElement('div'); m.className = 'msg'; m.textContent = t; sug.append(m); };
+      const runSearch = async manual => {
+        const q = inp.value.trim();
+        if (q.length < 3){ if (manual) showMsg('Escribe al menos 3 letras de lo que es (ej. «refresco naranja»).'); return; }
+        if (!navigator.onLine){ if (manual) showMsg('Sin conexión: no puedo buscar sugerencias.'); return; }
+        const my = ++token; showMsg('Buscando…');
+        const list = await searchNames(q);
+        if (my !== token) return;
+        if (!list.length){ showMsg('Sin sugerencias para «' + q + '». Prueba con otras palabras o escribe el nombre tú.'); return; }
+        sug.textContent = '';
+        list.forEach(r => {
+          const b = document.createElement('button'); b.type = 'button'; b.textContent = r.label;
+          if (r.sub){ const s = document.createElement('small'); s.textContent = r.sub; b.append(s); }
+          b.onclick = () => { inp.value = r.name; sug.hidden = true; sug.textContent = ''; inp.focus(); };
+          sug.append(b);
+        });
+      };
+      $('#dlgFind').onclick = () => runSearch(true);
+      $('#dlgPaste').onclick = async () => {
+        try { const t = (await navigator.clipboard.readText()).trim(); if (t){ inp.value = t.slice(0, 120); inp.focus(); } else showMsg('El portapapeles está vacío.'); }
+        catch { showMsg('No puedo leer el portapapeles: pega el texto a mano en el campo.'); }
+      };
+      // Elegir el tipo de producto en una lista por categorías (no necesita internet)
+      const CATS = window.CATALOG || {};
+      const pick = n => { typed = true; inp.value = n + ' '; sug.hidden = true; sug.textContent = ''; inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); };
+      const hd = t => { const e = document.createElement('div'); e.className = 'hd'; e.textContent = t; sug.append(e); };
+      const opt = (t, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = t; if (cls) b.className = cls; b.onclick = fn; sug.append(b); return b; };
+      const showCat = c => { token++; sug.hidden = false; sug.textContent = ''; opt('‹ Todos los tipos', showCats, 'back'); hd(c); CATS[c].forEach(n => opt(n, () => pick(n))); sug.scrollTop = 0; };
+      function showCats(){
+        token++; sug.hidden = false; sug.textContent = '';
+        const q = inp.value.trim();
+        if (q.length >= 2){ const m = suggestions(q, 6); if (m.length){ hd('Coincidencias'); m.forEach(e => opt(e.n, () => pick(e.n))); } }
+        hd('Tipos de producto');
+        Object.keys(CATS).forEach(c => opt(c + ' ›', () => showCat(c)));
+        sug.scrollTop = 0;
+      }
+      $('#dlgType').onclick = showCats;
+      const done = v => { token++; clearTimeout(timer); if (d.open) d.close(); res(v); };
       $('#dlgOk').onclick = () => done(inp.value.trim());
       $('#dlgCancel').onclick = () => done(null);
       db.onclick = () => done(DEL);
       d.oncancel = e => { e.preventDefault(); done(null); };
+      inp.oninput = () => { if (!suggest || typed) return; clearTimeout(timer); timer = setTimeout(() => runSearch(false), 700); };
       inp.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); done(inp.value.trim()); } };
-      d.showModal(); setTimeout(() => { inp.focus(); inp.select(); }, 50);
+      d.showModal(); setTimeout(() => { inp.focus(); if (value && inp.value === value) inp.select(); }, 50);
     });
   }
   function askAction(title, text, actions){
@@ -287,6 +343,26 @@
   /* =====================================================
      LISTA DE LA COMPRA
      ===================================================== */
+  // La lista se rellena sola: por cada producto del inventario con meta, lo que falta para llegar a ella
+  function syncAuto(){
+    const want = new Map();
+    for (const h of inv.homes){
+      for (const [key, it] of Object.entries(inv.items[h.id] || {})){
+        if (it.meta > 0 && it.qty < it.meta) want.set(h.id + '|' + key, { home: h.id, key, name: it.name, qty: it.meta - it.qty, have: it.qty, meta: it.meta });
+      }
+    }
+    let changed = false; const next = [];
+    for (const i of items){
+      if (!i.auto){ next.push(i); continue; }
+      const k = i.home + '|' + i.key, w = want.get(k);
+      if (!w){ changed = true; continue; }                          // ya no hace falta
+      if (i.qty !== w.qty || i.name !== w.name || i.have !== w.have || i.meta !== w.meta){ Object.assign(i, { qty: w.qty, name: w.name, have: w.have, meta: w.meta }); changed = true; }
+      want.delete(k); next.push(i);
+    }
+    for (const w of want.values()){ next.push({ id: uid(), auto: true, done: false, code: /^\d+$/.test(w.key) ? w.key : '', ...w }); changed = true; }
+    if (changed){ items = next; saveList(); }
+  }
+
   function addItem(name, code){
     name = (name || '').trim().replace(/\s+/g, ' ');
     if (!name) return null;
@@ -305,6 +381,7 @@
   function renderList(){
     const ul = $('#list'); ul.textContent = '';
     const sorted = [...items.filter(i => !i.done), ...items.filter(i => i.done)];
+    const multi = inv.homes.length > 1;
     for (const it of sorted){
       const li = document.createElement('li'); if (it.done) li.className = 'done';
       const chk = document.createElement('input'); chk.type = 'checkbox'; chk.className = 'chk'; chk.checked = it.done;
@@ -312,16 +389,26 @@
       chk.onchange = () => { it.done = chk.checked; saveList(); renderList(); };
       const body = document.createElement('div'); body.className = 'body';
       const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = it.name; body.append(nm);
-      const q = document.createElement('div'); q.className = 'qty';
-      const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', 'Menos');
-      const num = document.createElement('span'); num.textContent = it.qty;
-      const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label', 'Más');
-      minus.onclick = () => { if (it.qty > 1){ it.qty--; saveList(); renderList(); } };
-      plus.onclick = () => { it.qty++; saveList(); renderList(); };
-      q.append(minus, num, plus);
-      const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Borrar ' + it.name);
-      del.onclick = () => { items = items.filter(x => x.id !== it.id); saveList(); renderList(); };
-      li.append(chk, body, q, del); ul.append(li);
+      if (it.auto){
+        const home = inv.homes.find(x => x.id === it.home);
+        const m = document.createElement('div'); m.className = 'meta';
+        m.textContent = `Automático · ${multi && home ? home.name + ' · ' : ''}tienes ${it.have} de ${it.meta}`;
+        body.append(m);
+        const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = '×' + it.qty;
+        li.append(chk, body, badge);
+      } else {
+        const q = document.createElement('div'); q.className = 'qty';
+        const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', 'Menos');
+        const num = document.createElement('span'); num.textContent = it.qty;
+        const plus = document.createElement('button'); plus.textContent = '+'; plus.setAttribute('aria-label', 'Más');
+        minus.onclick = () => { if (it.qty > 1){ it.qty--; saveList(); renderList(); } };
+        plus.onclick = () => { it.qty++; saveList(); renderList(); };
+        q.append(minus, num, plus);
+        const del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.setAttribute('aria-label', 'Borrar ' + it.name);
+        del.onclick = () => { items = items.filter(x => x.id !== it.id); saveList(); renderList(); };
+        li.append(chk, body, q, del);
+      }
+      ul.append(li);
     }
     const pending = items.filter(i => !i.done).length, done = items.length - pending;
     $('#empty').hidden = items.length > 0;
@@ -355,7 +442,17 @@
     e.preventDefault(); const inp = $('#addInput'); if (addItem(inp.value)) inp.value = '';
     sugg.textContent = ''; inp.focus();
   });
-  $('#btnClearDone').onclick = () => { items = items.filter(i => !i.done); saveList(); renderList(); };
+  // Terminar compra: lo marcado sale de la lista y lo automático entra en el inventario
+  $('#btnClearDone').onclick = () => {
+    let moved = 0;
+    for (const it of items.filter(i => i.done && i.auto)){
+      const inItem = inv.items[it.home] && inv.items[it.home][it.key];
+      if (inItem){ inItem.qty += it.qty; moved++; }
+    }
+    items = items.filter(i => !i.done);
+    saveList(); saveInv(); renderList();
+    toast(moved ? `Compra terminada: ${moved} producto${moved === 1 ? '' : 's'} al inventario` : 'Compra terminada');
+  };
 
   async function copyText(text){
     try { await navigator.clipboard.writeText(text); toast('Lista copiada'); }
@@ -392,7 +489,7 @@
       const meta = document.createElement('div'); meta.className = 'meta'; meta.textContent = code;
       body.append(nm, meta);
       body.onclick = async () => {
-        const v = await askName({ title: 'Editar producto', text: 'Código ' + code, value: known[code], del: 'Borrar este producto' });
+        const v = await askName({ title: 'Editar producto', text: 'Código ' + code, value: known[code], del: 'Borrar este producto', suggest: true });
         if (v === DEL){ delete known[code]; saveKnown(); renderProd(); }
         else if (v){ known[code] = v; saveKnown(); renderProd(); }
       };
@@ -425,19 +522,29 @@
       const li = document.createElement('li'); if (it.qty === 0) li.className = 'zero';
       const body = document.createElement('div'); body.className = 'body';
       const nm = document.createElement('div'); nm.className = 'name'; nm.textContent = it.name; body.append(nm);
-      if (it.qty === 0){ const m = document.createElement('div'); m.className = 'meta'; m.textContent = 'Agotado'; body.append(m); }
+      if (it.qty === 0 || it.meta > 0){
+        const m = document.createElement('div'); m.className = 'meta';
+        const bits = []; if (it.qty === 0) bits.push('Agotado'); if (it.meta > 0) bits.push('Meta ' + it.meta);
+        m.textContent = bits.join(' · '); if (it.meta > 0 && it.qty < it.meta) m.classList.add('low'); body.append(m);
+      }
       body.onclick = async () => {
-        const r = await askAction(it.name, curHome().name + ': ' + it.qty + ' unidad' + (it.qty === 1 ? '' : 'es'), [
-          { label: '🛒 Añadir a la lista de la compra', cls: '' },
+        const r = await askAction(it.name, curHome().name + ': ' + it.qty + ' unidad' + (it.qty === 1 ? '' : 'es') + (it.meta > 0 ? ' · meta ' + it.meta : ''), [
+          { label: '🎯 ' + (it.meta > 0 ? 'Cambiar la meta…' : 'Fijar una meta…'), cls: '' },
+          { label: '🛒 Añadir a la lista ahora' },
           { label: 'Poner la cantidad exacta…' },
           { label: 'Quitar del inventario', cls: 'danger' }
         ]);
-        if (r === 0){ addItem(it.name, /^\d+$/.test(key) ? key : ''); toast('Añadido a la lista'); }
-        else if (r === 1){
-          const v = await askName({ title: 'Cantidad de ' + it.name, value: String(it.qty), ok: 'Guardar' });
+        if (r === 0){
+          const v = await askName({ title: 'Meta de ' + it.name, text: 'Cuántas unidades quieres tener siempre. Cuando haya menos, lo que falta se añade solo a la lista de la compra. Pon 0 para quitar la meta.', value: it.meta > 0 ? String(it.meta) : '', ok: 'Guardar', numeric: true });
+          const n = parseInt(v, 10);
+          if (v && v !== DEL && Number.isInteger(n) && n >= 0){ it.meta = n; saveInv(); renderInv(); toast(n ? 'Meta fijada: ' + n : 'Meta quitada'); }
+        }
+        else if (r === 1){ addItem(it.name, /^\d+$/.test(key) ? key : ''); toast('Añadido a la lista'); }
+        else if (r === 2){
+          const v = await askName({ title: 'Cantidad de ' + it.name, value: String(it.qty), ok: 'Guardar', numeric: true });
           const n = parseInt(v, 10); if (v && v !== DEL && n >= 0){ it.qty = n; saveInv(); renderInv(); }
         }
-        else if (r === 2){ delete curItems()[key]; saveInv(); renderInv(); }
+        else if (r === 3){ delete curItems()[key]; saveInv(); renderInv(); }
       };
       const q = document.createElement('div'); q.className = 'qty';
       const minus = document.createElement('button'); minus.textContent = '−'; minus.setAttribute('aria-label', 'Menos');
@@ -566,6 +673,32 @@
     const res = await Promise.all(OPEN_HOSTS.map(h => lookupOpen(h, code)));
     return res.find(Boolean) || (await lookupUPC(code));
   }
+  // Búsqueda por texto (para elegir de una lista cuando el código no está en ninguna base)
+  async function searchNames(q){
+    const mk = host => {
+      const p = new URLSearchParams({ search_terms: q, search_simple: '1', action: 'process', json: '1', page_size: '12', fields: 'code,product_name,product_name_es,brands,quantity' });
+      p.set('tagtype_0', 'countries'); p.set('tag_contains_0', 'contains'); p.set('tag_0', 'spain');
+      return `https://world.${host}.org/cgi/search.pl?${p}`;
+    };
+    const get = async host => {
+      try {
+        const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 9000);
+        const r = await fetch(mk(host), { signal: ctl.signal }); clearTimeout(t);
+        return (await r.json()).products || [];
+      } catch { return []; }
+    };
+    const lists = await Promise.all(OPEN_HOSTS.map(get));
+    const out = [], seen = new Set();
+    for (let i = 0; i < 12; i++) for (const l of lists){
+      const p = l[i]; if (!p) continue;
+      const n = (p.product_name_es || p.product_name || '').trim(); if (!n) continue;
+      const b = (p.brands || '').split(',')[0].trim(), qt = String(p.quantity || '').trim();
+      const name = (b && !norm(n).includes(norm(b)) ? `${n} (${b})` : n) + (qt ? ' ' + qt : '');
+      const key = norm(name); if (seen.has(key)) continue; seen.add(key);
+      out.push({ name, label: n, sub: [b, qt].filter(Boolean).join(' · ') });
+    }
+    return out.slice(0, 25);
+  }
 
   /* =====================================================
      ESCÁNER (modos: list · save · inv)
@@ -653,7 +786,7 @@
     if (scanMode === 'save' && known[code]){ toast('Ya estaba guardado: ' + known[code]); return; }
     if (scanMode === 'inv' && invDelta < 0 && !curItems()[code]){ toast('No está en el inventario: ' + (name || code)); return; }
     if (!name){
-      name = await askName({ title: 'Producto nuevo', text: 'Código ' + code + '. No lo encuentro: ponle un nombre y lo recordaré.', ok: scanMode === 'save' ? 'Guardar' : 'Añadir', web: googleUrl(code) });
+      name = await askName({ title: 'Producto nuevo', text: 'Código ' + code + '. No está en ninguna base. Elige el tipo de producto (🏷️ Tipo), busca sugerencias o escribe el nombre tú; después añade la marca.', ok: scanMode === 'save' ? 'Guardar' : 'Añadir', web: googleUrl(code), suggest: true });
       if (!name || name === DEL) return;
     }
     const isNew = !known[code];
@@ -718,6 +851,7 @@
     navigator.serviceWorker.register('sw.js').catch(() => {});
   }
   let t0 = 'list'; try { t0 = localStorage.getItem(LS.tab) || 'list'; } catch {}
+  syncAuto();
   showTab(t0);
   setTimeout(syncDb, 1500);
 })();
